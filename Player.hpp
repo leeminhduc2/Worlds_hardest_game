@@ -2,7 +2,7 @@
 #pragma once
 
 
-
+#include "Level.hpp"
 
 class Player
 {
@@ -39,7 +39,7 @@ public:
 	void handleEvent(SDL_Event &e);
 
 	// Player movement
-	void move();
+	void move(Level level);
 
 	// Show player on the screen
 	void render();

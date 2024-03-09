@@ -1,10 +1,12 @@
 #include "common.h"
 #include "Player.hpp"
+#include "Level.hpp"
+
 Player::Player()
 {
 	// Initialize the initial position
-	pPosX = 0;
-	pPosY = 0;
+	pPosX = SCREEN_WIDTH/2;
+	pPosY = SCREEN_HEIGHT/2;
 
 	// Initialize the player dimension
 	pHeight = 0;
@@ -104,7 +106,7 @@ int Player::getPlayerWidth()
 	return pWidth;
 }
 
-void Player::move()
+void Player::move(Level level)
 {
 	// Move to the right or left
 	pPosX += pVelX;
@@ -115,6 +117,36 @@ void Player::move()
 		// Undo moves
 		pPosX -= pVelX;
 	}
+	else
+	{
+		bool ok = 1;
+
+		//Checks if the upper left corner coincides with the background
+		if (!level.getMapValue2(pPosY,pPosX))
+			ok = 0;
+
+		//Checks if the upper right corner coincides with the background
+		if (!level.getMapValue2(pPosY+PLAYER_WIDTH-1,pPosX))
+			ok = 0;
+
+		//Checks if the lower left corner coincides with the background
+		if (!level.getMapValue2(pPosY,pPosX+PLAYER_HEIGHT-1))
+			ok = 0;
+
+		//Checks if the lower left corner coincides with the background
+		if (!level.getMapValue2(pPosY+PLAYER_WIDTH-1,pPosX+PLAYER_HEIGHT-1))
+			ok = 0;
+
+		if (!ok)
+		{
+			// Undo moves
+			pPosX -= pVelX;
+		}
+
+		
+	}
+
+	
 
 	pPosY += pVelY;
 
@@ -123,6 +155,32 @@ void Player::move()
 	{
 		// Undo moves
 		pPosY -= pVelY;
+	}
+	else
+	{
+		bool ok = 1;
+
+		//Checks if the upper left corner coincides with the background
+		if (!level.getMapValue2(pPosY,pPosX))
+			ok = 0;
+
+		//Checks if the upper right corner coincides with the background
+		if (!level.getMapValue2(pPosY+PLAYER_WIDTH-1,pPosX))
+			ok = 0;
+
+		//Checks if the lower left corner coincides with the background
+		if (!level.getMapValue2(pPosY,pPosX+PLAYER_HEIGHT-1))
+			ok = 0;
+
+		//Checks if the lower left corner coincides with the background
+		if (!level.getMapValue2(pPosY+PLAYER_WIDTH-1,pPosX+PLAYER_HEIGHT-1))
+			ok = 0;
+
+		if (!ok)
+		{
+			// Undo moves
+			pPosY -= pVelY;
+		}
 	}
 }
 

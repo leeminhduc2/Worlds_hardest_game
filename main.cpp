@@ -149,7 +149,7 @@ int main(int argc, char **argv)
 		}
 
 		// Move the dot
-		player.move();
+		player.move(level);
 
 		// Clear screen
 		SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
