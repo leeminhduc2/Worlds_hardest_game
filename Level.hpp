@@ -38,6 +38,18 @@ public:
     //Gets coordinate in the array based on its coordinate in the UI
     int getMapValue2(int y,int x);
 
+    //Check if the upper block is the background
+    bool uBackground(int y,int x);
+
+    //Check if the lower block is the background
+    bool dBackground(int y,int x);
+
+    //Check if the left block is the background
+    bool lBackground(int y,int x);
+
+    //Check if the right block is the background
+    bool rBackground(int y,int x);
+
 private: 
 
     // The map that will be stored inside an array
