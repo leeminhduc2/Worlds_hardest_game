@@ -41,8 +41,7 @@ public:
 	// Player movement
 	void move(Level level);
 
-	// Show player on the screen
-	void render();
+	
 
 private:
 	// The position of the red block

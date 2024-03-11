@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Level.hpp"
 
 class Level
 {
@@ -20,7 +21,7 @@ public:
     //Deallocates level
     ~Level();
 
-    //Deallovates memory
+    //Deallocates memory
     void free();
 
     //Reads level data

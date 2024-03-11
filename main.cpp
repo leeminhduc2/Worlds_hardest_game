@@ -6,6 +6,7 @@
 //Includes internal libraries
 #include "Player.hpp"
 #include "Level.hpp"
+#include "Dot.hpp"
 
 
 // The window we are rendering to
@@ -28,6 +29,9 @@ Player player;
 
 //Level
 Level level;
+
+//Dot
+Dot dot;
 
 bool init()
 {
@@ -94,6 +98,28 @@ bool loadMedia()
 		std::cout << "Failed to load out player!\n";
 		success = 0;
 	}
+
+	//Loads a dot
+	if (!dot.loadImage("Dot.bmp", gRenderer))
+	{
+		std::cout << "Failed to load out player!\n";
+		success = 0;
+	}
+	{
+		std::ifstream inp;
+		inp.open("level1_dots.txt");
+		int n;
+		inp >> n;
+		for (int i=1;i<=n;i++)
+		{
+			int xF,xS,yF,yS,moveTime;
+			inp >> xS >> yS >> xF >> yF >> moveTime;
+			dot.addPath(xS,yS,xF,yF,moveTime);
+		}
+		inp.close();
+
+	}
+
 	level.readLevelData("level1.txt");
 	return success;
 	
@@ -102,6 +128,12 @@ void close()
 {
 	// Remove loaded images
 	player.free();
+
+	//Remove level
+	level.free();
+
+	//Remove dot
+	dot.free();
 
 	// Destroy window
 	SDL_DestroyRenderer(gRenderer);
@@ -160,6 +192,9 @@ int main(int argc, char **argv)
 
 		// Render objects
 		player.render(player.getPlayerPosX(), player.getPlayerPosY(), gRenderer);
+
+		// Render dot
+		dot.render(SDL_GetTicks(),gRenderer);
 
 
 		// Update screen
