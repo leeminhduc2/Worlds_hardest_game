@@ -88,3 +88,32 @@ void Dot::render(int currentTime, SDL_Renderer *gRenderer, SDL_Rect *clip , doub
 	// Render to screen
 	SDL_RenderCopyEx(gRenderer, cTexture, clip, &renderRect, angle, center, flip);
 }
+
+//Returns total cycle time
+    int Dot::getTotalTime(){
+		return totalTime;
+	}
+
+    //Return moving path's parameters
+    int Dot::getXS(int i){
+		return pattern[i].xS;
+	}
+    int Dot::getYS(int i)
+	{
+		return pattern[i].yS;
+	}
+    int Dot::getXF(int i)
+	{
+		return pattern[i].xF;
+	}
+    int Dot::getYF(int i){
+		return pattern[i].yF;
+	}
+    int Dot::getMoveTime(int i)
+	{
+		return pattern[i].moveTime;
+	}
+	int Dot::getPatternSize()
+	{
+		return (int) pattern.size();
+	}

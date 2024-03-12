@@ -1,13 +1,11 @@
 /* leeminhduc2 - 23020047 - UET-VNU */
 
-
 #include "common.h"
 
-//Includes internal libraries
+// Includes internal libraries
 #include "Player.hpp"
 #include "Level.hpp"
 #include "Dot.hpp"
-
 
 // The window we are rendering to
 SDL_Window *gWindow = NULL;
@@ -27,11 +25,10 @@ void close();
 // Player
 Player player;
 
-//Level
+// Level
 Level level;
 
-//Dot
-Dot dot;
+std::vector<Dot> dots;
 
 bool init()
 {
@@ -98,42 +95,53 @@ bool loadMedia()
 		std::cout << "Failed to load out player!\n";
 		success = 0;
 	}
-
-	//Loads a dot
-	if (!dot.loadImage("Dot.bmp", gRenderer))
-	{
-		std::cout << "Failed to load out player!\n";
-		success = 0;
+	else{
+	player.setBlendMode( SDL_BLENDMODE_BLEND );
 	}
+
 	{
 		std::ifstream inp;
 		inp.open("level1_dots.txt");
-		int n;
-		inp >> n;
-		for (int i=1;i<=n;i++)
+		int m;
+		inp >> m;
+		while (m--)
 		{
-			int xF,xS,yF,yS,moveTime;
-			inp >> xS >> yS >> xF >> yF >> moveTime;
-			dot.addPath(xS,yS,xF,yF,moveTime);
+			Dot dot;
+			// Loads a dot
+			if (!dot.loadImage("Dot.bmp", gRenderer))
+			{
+				std::cout << "Failed to load out dot!\n";
+				success = 0;
+			}
+
+			int n;
+			inp >> n;
+			for (int i = 1; i <= n; i++)
+			{
+
+				int xF, xS, yF, yS, moveTime;
+				inp >> xS >> yS >> xF >> yF >> moveTime;
+				dot.addPath(xS, yS, xF, yF, moveTime);
+			}
+			dots.push_back(dot);
 		}
 		inp.close();
-
 	}
 
 	level.readLevelData("level1.txt");
 	return success;
-	
 }
 void close()
 {
 	// Remove loaded images
 	player.free();
 
-	//Remove level
+	// Remove level
 	level.free();
 
-	//Remove dot
-	dot.free();
+	// Remove dot
+	for (auto dot : dots)
+		dot.free();
 
 	// Destroy window
 	SDL_DestroyRenderer(gRenderer);
@@ -167,6 +175,7 @@ int main(int argc, char **argv)
 	// While application is running
 	while (!quit)
 	{
+
 		// Handle events on queue
 		while (SDL_PollEvent(&event) != 0)
 		{
@@ -179,9 +188,35 @@ int main(int argc, char **argv)
 			// Handle input for the dot
 			player.handleEvent(event);
 		}
-
-		// Move the dot
-		player.move(level);
+		int currentTime = SDL_GetTicks();
+		if (player.getPlayerStatus())
+		{
+			
+			int i=0;
+			for (Dot dot : dots)
+			{
+				if (player.checkCollision(currentTime, dot))
+				{
+					player.setPStatus(0);
+					break;
+				}
+				++i;
+			}
+			// Move the dot
+			player.move(level);
+		}
+		else
+		{
+			player.setAlpha(player.getAlphaValue()-5);
+			if (player.getAlphaValue()==0)
+			{
+				player.setAlpha(255);
+				player.setPosX(125);
+				player.setPosY(360);
+				player.setPStatus(1);
+			}
+			
+		}
 
 		// Clear screen
 		SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
@@ -194,8 +229,8 @@ int main(int argc, char **argv)
 		player.render(player.getPlayerPosX(), player.getPlayerPosY(), gRenderer);
 
 		// Render dot
-		dot.render(SDL_GetTicks(),gRenderer);
-
+		for (auto dot : dots)
+			dot.render(currentTime, gRenderer);
 
 		// Update screen
 		SDL_RenderPresent(gRenderer);

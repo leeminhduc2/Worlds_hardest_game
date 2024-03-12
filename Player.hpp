@@ -3,6 +3,8 @@
 
 
 #include "Level.hpp"
+#include "Dot.hpp"
+#include "Player.hpp"
 
 class Player
 {
@@ -11,6 +13,7 @@ public:
 	static const int PLAYER_HEIGHT = 30;
 
 	static const int PLAYER_VEL = 1;
+
 
 	// Initializes the variables
 	Player();
@@ -41,6 +44,30 @@ public:
 	// Player movement
 	void move(Level level);
 
+	// Set player status
+	void setPStatus(bool currentStatus);
+
+	//Set blending
+	void setBlendMode( SDL_BlendMode blending );
+
+	//Set alpha modulation
+	void setAlpha( Uint8 alpha );
+
+	// See if player touches a dot
+	bool checkCollision(int currentTime, Dot dot);
+
+	//Returns the current alpha value
+	int getAlphaValue();
+
+	//Returns the player current status
+	bool getPlayerStatus();
+
+	//Set player X position
+	void setPosX(int val);
+
+	//Set player Y position
+	void setPosY(int val);
+
 	
 
 private:
@@ -55,4 +82,11 @@ private:
 
 	// The actual hardware texture
 	SDL_Texture *pTexture;
+
+	// Player status
+	bool pStatus;
+
+	// current Alpha value
+
+	int pAlphaValue;
 };
