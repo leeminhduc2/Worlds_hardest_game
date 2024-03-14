@@ -6,6 +6,7 @@
 #include "Player.hpp"
 #include "Level.hpp"
 #include "Dot.hpp"
+#include "Coin.hpp"
 
 // The window we are rendering to
 SDL_Window *gWindow = NULL;
@@ -28,7 +29,12 @@ Player player;
 // Level
 Level level;
 
+//Dots
 std::vector<Dot> dots;
+
+//Coin
+
+Coin coin= Coin(SCREEN_WIDTH/2,SCREEN_HEIGHT/2);
 
 bool init()
 {
@@ -99,6 +105,17 @@ bool loadMedia()
 	player.setBlendMode( SDL_BLENDMODE_BLEND );
 	}
 
+	//Loads coin
+	
+	if (!coin.loadFromFile("coin_sheet.png", gRenderer))
+	{
+		std::cout << "Failed to load out player!\n";
+		success = 0;
+	}
+	else{
+	coin.setBlendMode( SDL_BLENDMODE_BLEND );
+	}
+
 	{
 		std::ifstream inp;
 		inp.open("level1_dots.txt");
@@ -129,6 +146,8 @@ bool loadMedia()
 	}
 
 	level.readLevelData("level1.txt");
+
+
 	return success;
 }
 void close()
@@ -138,6 +157,10 @@ void close()
 
 	// Remove level
 	level.free();
+
+
+	//Remove coin
+	coin.free();
 
 	// Remove dot
 	for (auto dot : dots)
@@ -171,6 +194,8 @@ int main(int argc, char **argv)
 
 	// Event handler
 	SDL_Event event;
+
+	int frame=0;
 
 	// While application is running
 	while (!quit)
@@ -207,7 +232,7 @@ int main(int argc, char **argv)
 		}
 		else
 		{
-			player.setAlpha(player.getAlphaValue()-5);
+			player.setAlpha(std::max(0,player.getAlphaValue()-3));
 			if (player.getAlphaValue()==0)
 			{
 				player.setAlpha(255);
@@ -218,19 +243,30 @@ int main(int argc, char **argv)
 			
 		}
 
+		
+
 		// Clear screen
 		SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
 		SDL_RenderClear(gRenderer);
 
-		// Render map
+		
+		// Render map (DO NOT PUT THIS LINE OF CODE BEHIND ANY OBJECT RENDER COMMAND, OR YOUR OBJECT WILL BE OVERLAPPED)
 		level.drawMap(gRenderer);
+		
+		//Render coin
+		coin.render(gRenderer,frame/4);
+		++frame;
+		if (frame/4==22) frame=0;
 
-		// Render objects
-		player.render(player.getPlayerPosX(), player.getPlayerPosY(), gRenderer);
+
+		
 
 		// Render dot
 		for (auto dot : dots)
 			dot.render(currentTime, gRenderer);
+
+		// Render player
+		player.render(player.getPlayerPosX(), player.getPlayerPosY(), gRenderer);
 
 		// Update screen
 		SDL_RenderPresent(gRenderer);
