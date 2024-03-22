@@ -14,6 +14,12 @@ SDL_Window *gWindow = NULL;
 // The window renderer
 SDL_Renderer *gRenderer = NULL;
 
+// The number of level
+const int LEVEL_NUMBER = 1;
+
+//The victory screen
+SDL_Texture *vTexture = NULL;
+
 // Starts up SDL and creates window
 bool init();
 
@@ -21,7 +27,19 @@ bool init();
 bool loadMedia();
 
 // Frees media and shuts down SDL
-void close();
+void closeGame();
+
+// Run a specific level
+void run(int i);
+
+// To reset media
+void closeMedia();
+
+//To load victory screen
+bool loadVictoryScreen();
+
+//To render victory screen
+void renderVictoryScreen();
 
 // Player
 Player player;
@@ -29,13 +47,56 @@ Player player;
 // Level
 Level level;
 
-//Dots
+// Dots
 std::vector<Dot> dots;
 
-//Coin
+// Coins
+Coin* coins;
+int nCoin,curCoin;
+void renderVictoryScreen()
+{
+	// Set up rendering space and render to screen
+	SDL_Rect renderRect = {0, 0, SCREEN_WIDTH, SCREEN_WIDTH};
+	
 
-Coin coin= Coin(SCREEN_WIDTH/2,SCREEN_HEIGHT/2);
+	// Render to screen
+	SDL_RenderCopy(gRenderer, vTexture, &renderRect, &renderRect);
+}
+bool loadVictoryScreen()
+{
+	// The final texture
+	SDL_Texture *newTexture = NULL;
 
+	// Load image
+	SDL_Surface *loadedSurface = IMG_Load("Resources/Victory_Screen.jpg");
+	if (loadedSurface == NULL)
+	{
+		std::cout << "Unable to load image " << "Resources/Victory_Screen.jpg" << "with exitcode " << IMG_GetError();
+	}
+	else
+	{
+		// Color key image
+		SDL_SetColorKey(loadedSurface, SDL_TRUE, SDL_MapRGB(loadedSurface->format, 0, 0xFF, 0xFF));
+
+		// Create texture from surface pixels
+		newTexture = SDL_CreateTextureFromSurface(gRenderer, loadedSurface);
+		if (newTexture == NULL)
+		{
+			std::cout << "Unable to create texture " << "Resources/Victory_Screen.jpg" << "with exitcode " << SDL_GetError();
+		}
+		else
+		{
+			
+		}
+
+		// Get rid of old loaded surface
+		SDL_FreeSurface(loadedSurface);
+	}
+
+	// Return success
+	vTexture = newTexture;
+	return vTexture != NULL;
+}
 bool init()
 {
 	// Initialization flag
@@ -90,45 +151,88 @@ bool init()
 
 	return success;
 }
-bool loadMedia()
+bool loadMedia(int levelNum)
 {
 	// Loading success flag
 	bool success = 1;
 
-	// Loads player
-	if (!player.loadFile("Player.bmp", gRenderer))
+	//Load victory screen
+	if (!loadVictoryScreen())
 	{
-		std::cout << "Failed to load out player!\n";
-		success = 0;
-	}
-	else{
-	player.setBlendMode( SDL_BLENDMODE_BLEND );
+		std::cout << "Failed to load out Victory screen\n";
+		return 0;
 	}
 
-	//Loads coin
+	// Load level
+
+	level.readLevelData("Resources/Level_datas/level" + std::to_string(levelNum) + ".txt");
 	
-	if (!coin.loadFromFile("coin_sheet.png", gRenderer))
+	// Loads player
+	if (!player.loadFile("Resources/Player.bmp", gRenderer))
 	{
 		std::cout << "Failed to load out player!\n";
-		success = 0;
+		return 0;
 	}
-	else{
-	coin.setBlendMode( SDL_BLENDMODE_BLEND );
+	else
+	{
+		
+		player.setBlendMode(SDL_BLENDMODE_BLEND);
+		
+		player.setSpawnPoint(level.getSpawnPointX(0), level.getSpawnPointY(0));
+		std::cerr << "OK";
+		player.gotoSpawnPoint();
 	}
+	std::cerr << "OK";
+	
 
+	// Loads coins
 	{
 		std::ifstream inp;
-		inp.open("level1_dots.txt");
+		inp.open("Resources/Level_datas/level" + std::to_string(levelNum) + "_coins.txt");
+		
+		inp >> nCoin;
+		coins = new Coin[nCoin];
+		for (int i=0;i<nCoin;i++)
+		{
+			
+			int x, y;
+			inp >> x >> y;
+
+			
+			coins[i].setX(x);
+			coins[i].setY(y);
+			
+			// Load a coin
+			if (!coins[i].loadFromFile("Resources/coin_sheet.png", gRenderer))
+			{
+				std::cout << "Failed to load out coin!\n";
+				return 0;
+			}
+			else
+			{
+				coins[i].setBlendMode(SDL_BLENDMODE_BLEND);
+			}
+			
+			
+		}
+		inp.close();
+		
+	}
+	
+	// Load dots
+	{
+		std::ifstream inp;
+		inp.open("Resources/Level_datas/level" + std::to_string(levelNum) + "_dots.txt");
 		int m;
 		inp >> m;
 		while (m--)
 		{
 			Dot dot;
 			// Loads a dot
-			if (!dot.loadImage("Dot.bmp", gRenderer))
+			if (!dot.loadImage("Resources/Dot.bmp", gRenderer))
 			{
 				std::cout << "Failed to load out dot!\n";
-				success = 0;
+				return 0;
 			}
 
 			int n;
@@ -145,26 +249,33 @@ bool loadMedia()
 		inp.close();
 	}
 
-	level.readLevelData("level1.txt");
-
-
 	return success;
 }
-void close()
+void closeMedia()
 {
-	// Remove loaded images
-	player.free();
-
-	// Remove level
+	// Close level
 	level.free();
 
+	// Close player entity
+	player.free();
 
-	//Remove coin
-	coin.free();
-
-	// Remove dot
-	for (auto dot : dots)
+	// Close dots
+	for (Dot dot : dots)
+	{
 		dot.free();
+	}
+	while ((int)dots.size())
+		dots.pop_back();
+
+	// Close coins
+	coins = NULL;
+
+	//Close victory screen image
+	vTexture = NULL;
+	
+}
+void closeGame()
+{
 
 	// Destroy window
 	SDL_DestroyRenderer(gRenderer);
@@ -176,32 +287,46 @@ void close()
 	IMG_Quit();
 	SDL_Quit();
 }
-
-int main(int argc, char **argv)
+void run(int levelNum)
 {
-	if (!init())
+	
+	if (!loadMedia(levelNum))
 	{
-		std::cout << "Failed to initialize!\n";
-		return -1;
+		std::cout << "Failed to load media for level " << levelNum << "!\n";
+		closeMedia();
+		return;
 	}
-	if (!loadMedia())
-	{
-		std::cout << "Failed to load media!\n";
-		return -1;
-	}
+	
+	
 	// Main loop flag
 	bool quit = 0;
+
+	// Check if the player has completed the level
+	bool win=0;
 
 	// Event handler
 	SDL_Event event;
 
-	int frame=0;
-
+	int frame = 0;
+	
 	// While application is running
 	while (!quit)
 	{
-
+		
+		
+		if (win==true)
+		{
+			
+			// Clear screen
+		SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
+		SDL_RenderClear(gRenderer);
+		renderVictoryScreen();
+		SDL_RenderPresent(gRenderer);
+			SDL_Delay(3000);
+			quit=true;
+		}
 		// Handle events on queue
+		
 		while (SDL_PollEvent(&event) != 0)
 		{
 			// User requests quit
@@ -217,7 +342,7 @@ int main(int argc, char **argv)
 		if (player.getPlayerStatus())
 		{
 			
-			int i=0;
+			int i = 0;
 			for (Dot dot : dots)
 			{
 				if (player.checkCollision(currentTime, dot))
@@ -227,39 +352,72 @@ int main(int argc, char **argv)
 				}
 				++i;
 			}
+			if (player.getPlayerStatus()==0) continue;
+			// If the player is not touch the dot, check if it touches any coin
+			for (int i=0;i<nCoin;i++)
+			{
+				if (player.isTouchCoin(coins[i])&&coins[i].getStatus()==0)
+					coins[i].setStatus(1);
+			}
 			// Move the dot
 			player.move(level);
+			//To check if the player touches any tile, including the start and finishes
+			
+			for (int i=2;i<2+level.getCheckpointNum();i++)
+				if (player.isTouchTile(level,i))
+					{
+						
+						player.setSpawnPoint(level.getSpawnPointX(i-2),level.getSpawnPointY(i-2));
+						for (int j=0;j<nCoin;j++) 
+						{
+							if (coins[j].getStatus()==1)
+							{
+								coins[j].setStatus(2);
+								++curCoin;
+							}
+						}
+						if (i==3)
+						{
+							if (curCoin==nCoin) win=1;
+						}
+					}
+			
 		}
 		else
 		{
-			player.setAlpha(std::max(0,player.getAlphaValue()-3));
-			if (player.getAlphaValue()==0)
+			player.setAlpha(std::max(0, player.getAlphaValue() - 3));
+			if (player.getAlphaValue() == 0)
 			{
 				player.setAlpha(255);
-				player.setPosX(125);
-				player.setPosY(360);
+				player.gotoSpawnPoint();
 				player.setPStatus(1);
+				for (int i=0;i<nCoin;i++)
+					if (coins[i].getStatus() == 1)
+					{
+						coins[i].setStatus(0);
+						coins[i].setAlpha(255);
+					}
 			}
-			
 		}
-
-		
+			for (int i=0;i<nCoin;i++)
+			if (coins[i].getStatus() == 1)
+			{
+				coins[i].setAlpha(std::max(0, coins[i].getAlphaValue() - 3));
+			}
 
 		// Clear screen
 		SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
 		SDL_RenderClear(gRenderer);
 
-		
 		// Render map (DO NOT PUT THIS LINE OF CODE BEHIND ANY OBJECT RENDER COMMAND, OR YOUR OBJECT WILL BE OVERLAPPED)
 		level.drawMap(gRenderer);
-		
-		//Render coin
-		coin.render(gRenderer,frame/4);
+
+		// Render coin
+		for (int i=0;i<nCoin;i++)
+			coins[i].render(gRenderer, frame / 4);
 		++frame;
-		if (frame/4==22) frame=0;
-
-
-		
+		if (frame / 4 == 22)
+			frame = 0;
 
 		// Render dot
 		for (auto dot : dots)
@@ -271,7 +429,18 @@ int main(int argc, char **argv)
 		// Update screen
 		SDL_RenderPresent(gRenderer);
 	}
-
+	closeMedia();
+}
+int main(int argc, char **argv)
+{
+	if (!init())
+	{
+		std::cout << "Failed to initialize!\n";
+		return -1;
+	}
+	run(1);
+	run(2);
 	// Free resources
-	close();
+	std::cerr << "SUCCESS";
+	closeGame();
 }

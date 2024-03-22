@@ -1,12 +1,14 @@
 #include "common.h"
 #include "Player.hpp"
 #include "Level.hpp"
+#include "Coin.hpp"
+#include "Dot.hpp"
 
 Player::Player()
 {
 	// Initialize the initial position
-	pPosX = 125;
-	pPosY = 360;
+	pPosX = 0;
+	pPosY = 0;
 
 	// Initialize the player dimension
 	pHeight = 0;
@@ -24,6 +26,10 @@ Player::Player()
 
 	// Initialize opacity with maximum percentage
 	pAlphaValue = 255;
+
+	// Initialize spawn point
+	pSpawnPosX = 0;
+	pSpawnPosY = 0;
 }
 
 Player::~Player()
@@ -46,6 +52,8 @@ void Player::free()
 		pHeight = 0;
 		pStatus = playerStatus::ALIVE;
 		pAlphaValue = 255;
+		pSpawnPosX = 0;
+		pSpawnPosY = 0;
 	}
 }
 
@@ -301,8 +309,8 @@ bool Player::checkCollision(int currentTime, Dot dot)
 			break;
 		}
 	}
-	dX+=dot.C_RAD;
-	dY+=dot.C_RAD;
+	dX += dot.C_RAD;
+	dY += dot.C_RAD;
 	// Finds the minimum distance from the dots center to the player's edge
 	double dist = 2000.0;
 	if ((pPosX <= dX && dX < (pPosX + pWidth)) && (pPosY <= dY && dY < pPosY + pHeight))
@@ -316,7 +324,6 @@ bool Player::checkCollision(int currentTime, Dot dot)
 	dist = std::min(dist, sqrt(1.0 * (pPosX - dX) * (pPosX - dX) + 1.0 * (pPosY + pHeight - 1 - dY) * (pPosY + pHeight - 1 - dY)));
 	dist = std::min(dist, sqrt(1.0 * (pPosX + pWidth - 1 - dX) * (pPosX + pWidth - 1 - dX) + 1.0 * (pPosY + pHeight - 1 - dY) * (pPosY + pHeight - 1 - dY)));
 	return (dist <= 1.0 * dot.C_RAD);
-	
 }
 
 int Player::getAlphaValue()
@@ -337,4 +344,60 @@ void Player::setPosX(int val)
 void Player::setPosY(int val)
 {
 	pPosY = val;
+}
+
+bool Player::isTouchCoin(Coin &coin)
+{
+	// Finds the center coordinate of the dot
+
+	int cX, cY;
+
+	cX = coin.getX() + coin.COIN_RAD;
+	cY = coin.getY() + coin.COIN_RAD;
+
+	// Finds the minimum distance from the dots center to the player's edge
+	double dist = 2000.0;
+	if ((pPosX <= cX && cX < (pPosX + pWidth)) && (pPosY <= cY && cY < pPosY + pHeight))
+		dist = 0.1;
+	if ((pPosX <= cX && cX < pPosX + pWidth))
+		dist = std::min({dist, 1.0 * abs(cY - pPosY), 1.0 * abs(cY - (pPosY + pHeight - 1))});
+	if ((pPosY <= cY && cY < pPosY + pHeight))
+		dist = std::min({dist, 1.0 * abs(cX - pPosX), 1.0 * abs(cX - (pPosX + pWidth - 1))});
+	dist = std::min(dist, sqrt(1.0 * (pPosX - cX) * (pPosX - cX) + 1.0 * (pPosY - cY) * (pPosY - cY)));
+	dist = std::min(dist, sqrt(1.0 * (pPosX + pWidth - 1 - cX) * (pPosX + pWidth - 1 - cX) + 1.0 * (pPosY - cY) * (pPosY - cY)));
+	dist = std::min(dist, sqrt(1.0 * (pPosX - cX) * (pPosX - cX) + 1.0 * (pPosY + pHeight - 1 - cY) * (pPosY + pHeight - 1 - cY)));
+	dist = std::min(dist, sqrt(1.0 * (pPosX + pWidth - 1 - cX) * (pPosX + pWidth - 1 - cX) + 1.0 * (pPosY + pHeight - 1 - cY) * (pPosY + pHeight - 1 - cY)));
+	return (dist <= 1.0 * coin.COIN_RAD);
+}
+
+void Player::setSpawnPoint(int x, int y)
+{
+	pSpawnPosX = x;
+	pSpawnPosY = y;
+}
+
+void Player::gotoSpawnPoint()
+{
+	pPosX = pSpawnPosX;
+	pPosY = pSpawnPosY;
+}
+
+bool Player::isTouchTile(Level level, int value)
+{
+	// Checks if the upper left corner coincides with the background
+	if (level.getMapValue2(pPosY, pPosX)==value)
+		return 1;
+
+	// Checks if the upper right corner coincides with the background
+	if (level.getMapValue2(pPosY + PLAYER_WIDTH - 1, pPosX)==value)
+		return 1;
+
+	// Checks if the lower left corner coincides with the background
+	if (level.getMapValue2(pPosY, pPosX + PLAYER_HEIGHT - 1)==value)
+		return 1;
+
+	// Checks if the lower left corner coincides with the background
+	if (!level.getMapValue2(pPosY + PLAYER_WIDTH - 1, pPosX + PLAYER_HEIGHT - 1)==value)
+		return 1;
+	return 0;
 }

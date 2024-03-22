@@ -1,17 +1,14 @@
 #include "common.h"
 #include "Coin.hpp"
 
-Coin::Coin(int x, int y)
+Coin::Coin()
 {
-    cPosX = x;
-    cPosY = y;
-    for (int i = 0; i < 22; i++)
-    {
-        SDL_Rect Rect = {i * COIN_LENGTH, 0, COIN_LENGTH, COIN_LENGTH};
-        
-        cClips.push_back(Rect);
-    }
+    cPosX = 0;
+    cPosY = 0;
+    cTexture=NULL;
+    
     cAlpha=255;
+    cStatus=0;
     
 }
 
@@ -65,9 +62,11 @@ void Coin::free()
         cTexture = NULL;
         cPosX = 0;
         cPosY = 0;
-        while ((int)cClips.size())
-            cClips.pop_back();
+        
+        cStatus=0;
+        cAlpha=0;
     }
+    
 }
 
 void Coin::setBlendMode(SDL_BlendMode blending)
@@ -77,7 +76,7 @@ void Coin::setBlendMode(SDL_BlendMode blending)
 }
 
 
-void Coin::setAlpha(Uint8 alpha)
+void Coin::setAlpha(int alpha)
 {
     // Modulate texture alpha
 	SDL_SetTextureAlphaMod(cTexture, alpha);
@@ -89,12 +88,42 @@ void Coin::render(SDL_Renderer *gRenderer, int currentFrame)
 {
     // Set up rendering space and render to screen
 	SDL_Rect renderRect = {cPosX, cPosY, COIN_LENGTH, COIN_LENGTH};
-	
+	SDL_Rect Clip = {currentFrame*COIN_LENGTH,0,COIN_LENGTH,COIN_LENGTH};
 	// Render to screen
-	SDL_RenderCopy(gRenderer, cTexture, &cClips[currentFrame], &renderRect);
+	SDL_RenderCopy(gRenderer, cTexture, &Clip, &renderRect);
 }
 
 int Coin::getAlphaValue()
 {
     return cAlpha;
+}
+
+int Coin::getX()
+{
+    return cPosX;
+}
+
+int Coin::getY()
+{
+    return cPosY;
+}
+
+int Coin::getStatus()
+{
+    return cStatus;
+}
+
+void Coin::setStatus(int value)
+{   
+    cStatus = value;
+}
+
+void Coin::setX(int x)
+{
+    cPosX=x;
+}
+
+void Coin::setY(int y)
+{
+    cPosY=y;
 }

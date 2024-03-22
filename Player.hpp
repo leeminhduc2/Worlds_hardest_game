@@ -5,6 +5,7 @@
 #include "Level.hpp"
 #include "Dot.hpp"
 #include "Player.hpp"
+#include "Coin.hpp"
 
 class Player
 {
@@ -68,6 +69,18 @@ public:
 	//Set player Y position
 	void setPosY(int val);
 
+	//To check if player touches a coin
+	bool isTouchCoin(Coin &coin);
+
+	//To set spawn point for the player
+	void setSpawnPoint(int x,int y);
+
+	//To go to the initialized spawn point
+	void gotoSpawnPoint();
+
+	//To check if the player is on the tile of type i
+	bool isTouchTile(Level level, int value);
+
 	
 
 private:
@@ -87,6 +100,8 @@ private:
 	bool pStatus;
 
 	// current Alpha value
-
 	int pAlphaValue;
+
+	//Current spawn point
+	int pSpawnPosX,pSpawnPosY;
 };

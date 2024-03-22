@@ -22,15 +22,31 @@ void Level::free()
     for (int y = 0; y < 14; y++)
         for (int x = 0; x < 22; x++)
             a[y][x] = 0;
+    while ((int) spawnX.size()) spawnX.pop_back();
+    while ((int) spawnY.size()) spawnY.pop_back();
 }
 
 void Level::readLevelData(std::string path)
 {
+    std::cerr <<path << " ";
+    int max_value=0;
     std::ifstream inp;
     inp.open(path.c_str());
+    // Read map data
     for (int y = 0; y < 14; y++)
-        for (int x = 0; x < 22; x++)
+        for (int x = 0; x < 22; x++){
             inp >> a[y][x];
+            max_value=std::max(max_value,a[y][x]);
+        }
+    //Read spawn points
+    max_value-=1;
+    for (int i=0;i<max_value;i++)
+    {
+        int x,y;
+        inp >> x >> y;
+        spawnX.push_back(x);
+        spawnY.push_back(y);
+    }
     inp.close();
 }
 
@@ -167,4 +183,17 @@ bool Level::lBackground(int y, int x)
 bool Level::rBackground(int y, int x)
 {
     return (x < 22 && (!a[y][x + 1]));
+}
+
+int Level::getSpawnPointX(int i)
+{
+    return spawnX[i];
+}
+int Level::getSpawnPointY(int i)
+{
+    return spawnY[i];
+}
+int Level::getCheckpointNum()
+{
+    return (int) spawnX.size();
 }
