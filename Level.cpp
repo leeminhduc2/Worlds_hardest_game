@@ -8,7 +8,8 @@ Level::Level()
     for (int y = 0; y < 14; y++)
         for (int x = 0; x < 22; x++)
             a[y][x] = 0;
-    vTexture = NULL;
+    nCheckpoint = 0;
+    
 }
 
 Level::~Level()
@@ -23,13 +24,15 @@ void Level::free()
     for (int y = 0; y < 14; y++)
         for (int x = 0; x < 22; x++)
             a[y][x] = 0;
-    while ((int) spawnX.size()) spawnX.pop_back();
-    while ((int) spawnY.size()) spawnY.pop_back();
+    spawnX=NULL;
+    spawnY=NULL;
+
+    nCheckpoint=0;
 }
 
 void Level::readLevelData(std::string path)
 {
-    std::cerr <<path << " ";
+    
     int max_value=0;
     std::ifstream inp;
     inp.open(path.c_str());
@@ -41,13 +44,17 @@ void Level::readLevelData(std::string path)
         }
     //Read spawn points
     max_value-=1;
+    spawnX = new int[max_value];
+    spawnY = new int[max_value];
+    
     for (int i=0;i<max_value;i++)
     {
-        int x,y;
-        inp >> x >> y;
-        spawnX.push_back(x);
-        spawnY.push_back(y);
+        
+        inp >> spawnX[i] >> spawnY[i];
+        
+        
     }
+    nCheckpoint = max_value;
     inp.close();
 }
 
@@ -196,50 +203,6 @@ int Level::getSpawnPointY(int i)
 }
 int Level::getCheckpointNum()
 {
-    return (int) spawnX.size();
+    return nCheckpoint;
 }
 
-void Level::renderVictoryScreen(SDL_Renderer *gRenderer)
-{
-	// Set up rendering space and render to screen
-	SDL_Rect renderRect = {0, 0, SCREEN_WIDTH, SCREEN_WIDTH};
-	
-
-	// Render to screen
-	SDL_RenderCopy(gRenderer, vTexture, &renderRect, &renderRect);
-}
-bool Level::loadVictoryScreen(SDL_Renderer *gRenderer)
-{
-	// The final texture
-	SDL_Texture *newTexture = NULL;
-
-	// Load image
-	SDL_Surface *loadedSurface = IMG_Load("Resources/Victory_Screen.jpg");
-	if (loadedSurface == NULL)
-	{
-		std::cout << "Unable to load image " << "Resources/Victory_Screen.jpg" << "with exitcode " << IMG_GetError();
-	}
-	else
-	{
-		// Color key image
-		SDL_SetColorKey(loadedSurface, SDL_TRUE, SDL_MapRGB(loadedSurface->format, 0, 0xFF, 0xFF));
-
-		// Create texture from surface pixels
-		newTexture = SDL_CreateTextureFromSurface(gRenderer, loadedSurface);
-		if (newTexture == NULL)
-		{
-			std::cout << "Unable to create texture " << "Resources/Victory_Screen.jpg" << "with exitcode " << SDL_GetError();
-		}
-		else
-		{
-			
-		}
-
-		// Get rid of old loaded surface
-		SDL_FreeSurface(loadedSurface);
-	}
-
-	// Return success
-	vTexture = newTexture;
-	return vTexture != NULL;
-}

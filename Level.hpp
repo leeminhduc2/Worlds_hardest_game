@@ -60,11 +60,7 @@ public:
     //To get the number of checkpoints (including start and finish)
     int getCheckpointNum();
 
-    //To load victory screen
-    bool loadVictoryScreen(SDL_Renderer *gRenderer);
-
-    //To render victory screen
-    void renderVictoryScreen(SDL_Renderer *gRenderer);
+    
 
     
 
@@ -75,26 +71,13 @@ private:
     int a[14][22];
 
     //A vector that contains the checkpoint spawn position
-    std::vector <int> spawnX;
-    std::vector <int> spawnY;
+    int* spawnX;
+    int* spawnY;
 
-    //The victory screen
-    SDL_Texture *vTexture;
+    //The number of checkpoints
+    int nCheckpoint;
 
-    //Death counter parameters
-    SDL_Texture *dcTexture;
-    int dcWidth,dcHeight;
     
-    //Coin counter parameters
-    SDL_Texture *ccTexture;
-    int ccWidth,ccHeight;
-
-    //Round counter parameters
-    SDL_Texture *rcTexture;
-    int rcWidth,rcHeight;
-
-
-    //Timer parameters
 
 
     

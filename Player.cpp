@@ -298,7 +298,7 @@ bool Player::checkCollision(int currentTime, Dot dot)
 	dist = std::min(dist, sqrt(1.0 * (pPosX + pWidth - 1 - dX) * (pPosX + pWidth - 1 - dX) + 1.0 * (pPosY - dY) * (pPosY - dY)));
 	dist = std::min(dist, sqrt(1.0 * (pPosX - dX) * (pPosX - dX) + 1.0 * (pPosY + pHeight - 1 - dY) * (pPosY + pHeight - 1 - dY)));
 	dist = std::min(dist, sqrt(1.0 * (pPosX + pWidth - 1 - dX) * (pPosX + pWidth - 1 - dX) + 1.0 * (pPosY + pHeight - 1 - dY) * (pPosY + pHeight - 1 - dY)));
-	return (dist <= 1.0 * dot.C_RAD);
+	return (dist <= 1.0 * 7.0);
 }
 
 int Player::getAlphaValue()

@@ -15,8 +15,11 @@ SDL_Window *gWindow = NULL;
 // The window renderer
 SDL_Renderer *gRenderer = NULL;
 
+//
+SDL_Texture *vTexture=NULL;
+
 // The number of level
-const int LEVEL_NUMBER = 2;
+const int LEVEL_NUMBER = 7;
 
 // Globally used font
 TTF_Font *gFont = NULL;
@@ -36,6 +39,12 @@ void run(int i);
 // To reset media
 void closeMedia();
 
+// To load victory screen
+bool loadVictoryScreen();
+
+// To render victory screen
+void renderVictoryScreen();
+
 // Player
 Player player;
 
@@ -48,21 +57,66 @@ int nDots;
 
 // Coins
 Coin *coins;
-int nCoin, curCoin,unsavedCoin;
+int nCoin, curCoin, unsavedCoin;
 
-//Death count texture
+// Death count texture
 HUD_Text deathCount;
 int death;
 
-//Coin count texture
+// Coin count texture
 HUD_Text coinCount;
 
-//Level count texture
+// Level count texture
 HUD_Text levelCount;
 
-//Timer texture
+// Timer texture
 HUD_Text timer;
 
+void renderVictoryScreen()
+{
+	// Set up rendering space and render to screen
+	SDL_Rect renderRect = {0, 0, SCREEN_WIDTH, SCREEN_WIDTH};
+
+	// Render to screen
+	SDL_RenderCopy(gRenderer, vTexture, &renderRect, &renderRect);
+}
+bool loadVictoryScreen()
+{
+	// The final texture
+	SDL_Texture *newTexture = NULL;
+
+	// Load image
+	SDL_Surface *loadedSurface = IMG_Load("Resources/Victory_Screen.jpg");
+	if (loadedSurface == NULL)
+	{
+		std::cout << "Unable to load image "
+				  << "Resources/Victory_Screen.jpg"
+				  << "with exitcode " << IMG_GetError();
+	}
+	else
+	{
+		// Color key image
+		SDL_SetColorKey(loadedSurface, SDL_TRUE, SDL_MapRGB(loadedSurface->format, 0, 0xFF, 0xFF));
+
+		// Create texture from surface pixels
+		newTexture = SDL_CreateTextureFromSurface(gRenderer, loadedSurface);
+		if (newTexture == NULL)
+		{
+			std::cout << "Unable to create texture "
+					  << "Resources/Victory_Screen.jpg"
+					  << "with exitcode " << SDL_GetError();
+		}
+		
+
+		// Get rid of old loaded surface
+		SDL_FreeSurface(loadedSurface);
+	}
+	
+	// Return success
+	vTexture = newTexture;
+	
+	return vTexture != NULL;
+}
 bool init()
 {
 	// Initialization flag
@@ -139,17 +193,7 @@ bool loadMedia(int levelNum)
 	// Loading success flag
 	bool success = 1;
 
-
-	// Load victory screen
-
-	if (!level.loadVictoryScreen(gRenderer))
-	{
-		std::cout << "Failed to load out Victory screen\n";
-		return 0;
-	}
-
 	// Load level
-
 	level.readLevelData("Resources/Level_datas/level" + std::to_string(levelNum) + ".txt");
 
 	// Loads player
@@ -162,6 +206,7 @@ bool loadMedia(int levelNum)
 	{
 
 		player.setBlendMode(SDL_BLENDMODE_BLEND);
+
 		player.setSpawnPoint(level.getSpawnPointX(0), level.getSpawnPointY(0));
 		player.gotoSpawnPoint();
 	}
@@ -228,8 +273,6 @@ bool loadMedia(int levelNum)
 		inp.close();
 	}
 
-	
-
 	return success;
 }
 void closeMedia()
@@ -246,7 +289,7 @@ void closeMedia()
 
 	// Close and reset coin parameters
 	coins = NULL;
-	nCoin = curCoin = 0;
+	nCoin = curCoin = unsavedCoin = 0;
 }
 void closeGame()
 {
@@ -284,9 +327,7 @@ void run(int levelNum)
 	// While application is running
 	while (!quit)
 	{
-		
 
-		
 		// Handle events on queue
 
 		while (SDL_PollEvent(&event) != 0)
@@ -296,18 +337,15 @@ void run(int levelNum)
 			{
 				quit = true;
 			}
-			
+
 			// Handle input for the dot
 			player.handleEvent(event);
-			
 		}
-		
-		
+
 		int currentTime = SDL_GetTicks();
 		if (player.getPlayerStatus())
 		{
 
-			
 			for (int j = 0; j < nDots; j++)
 			{
 				if (player.checkCollision(currentTime, dots[j]))
@@ -316,9 +354,8 @@ void run(int levelNum)
 					++death;
 					break;
 				}
-				
 			}
-			
+
 			if (player.getPlayerStatus() == 0)
 				continue;
 			// If the player isn't touch the dot, check if it touches any coin
@@ -330,7 +367,7 @@ void run(int levelNum)
 					++unsavedCoin;
 				}
 			}
-			
+
 			// Move the dot
 			player.move(level);
 			// To check if the player touches any tile, including the start and finishes
@@ -354,14 +391,13 @@ void run(int levelNum)
 							win = 1;
 					}
 				}
-			
 		}
 		else
 		{
 			player.setAlpha(std::max(0, player.getAlphaValue() - 3));
 			if (player.getAlphaValue() == 0)
 			{
-				
+
 				player.setAlpha(255);
 				player.gotoSpawnPoint();
 				player.setPStatus(1);
@@ -374,8 +410,7 @@ void run(int levelNum)
 					}
 			}
 		}
-		
-		
+
 		for (int i = 0; i < nCoin; i++)
 			if (coins[i].getStatus() == 1)
 			{
@@ -402,69 +437,78 @@ void run(int levelNum)
 
 		// Render player
 		player.render(player.getPlayerPosX(), player.getPlayerPosY(), gRenderer);
-		
-		SDL_Color textColor = {255,255,255,255};
-		//Render level count text texture
+
+		SDL_Color textColor = {255, 255, 255, 255};
+		// Render level count text texture
 		{
-			if (!levelCount.loadText("LEVEL " + std::to_string(levelNum),textColor,gRenderer,gFont))
+			if (!levelCount.loadText("LEVEL " + std::to_string(levelNum), textColor, gRenderer, gFont))
 			{
 				std::cout << "Failed to load level count text texture\n";
-
 			}
-			levelCount.renderText(5,20,gRenderer);
+			levelCount.renderText(5, 20, gRenderer);
 		}
-		//Render death count text texture
+		// Render death count text texture
 		{
-			if (!deathCount.loadText("DEATH: " + std::to_string(death),textColor,gRenderer,gFont))
+			if (!deathCount.loadText("DEATH: " + std::to_string(death), textColor, gRenderer, gFont))
 			{
 				std::cout << "Failed to load death count text texture\n";
-
 			}
-			deathCount.renderText(SCREEN_WIDTH-5-deathCount.getWidth(),20,gRenderer);
+			deathCount.renderText(SCREEN_WIDTH - 5 - deathCount.getWidth(), 20, gRenderer);
 		}
-		//Render coin count text texture
+		// Render coin count text texture
 		{
-			if (!coinCount.loadText("Coins: " + std::to_string(unsavedCoin) + "/" + std::to_string(nCoin),textColor,gRenderer,gFont))
+			if (!coinCount.loadText("Coins: " + std::to_string(unsavedCoin) + "/" + std::to_string(nCoin), textColor, gRenderer, gFont))
 			{
 				std::cout << "Failed to load coin count text texture\n";
-
 			}
-			coinCount.renderText(SCREEN_WIDTH/2-coinCount.getWidth()/2,20,gRenderer);
+			coinCount.renderText(SCREEN_WIDTH / 2 - coinCount.getWidth() / 2, 20, gRenderer);
 		}
-		//Render timer count text texture
+		// Render timer count text texture
 		{
-			int hour,minute,second,t;
-			int curTime=SDL_GetTicks();
-			t=curTime%1000;
-			curTime/=1000;
-			second=curTime%60;
-			curTime/=60;
-			minute=curTime%60;
-			curTime/=60;
-			hour=curTime;
-			if (!timer.loadText(std::to_string(hour) + ":" + std::to_string(minute) + ":" + std::to_string(second) + ":" + std::to_string(t),textColor,gRenderer,gFont))
+			int hour, minute, second, t;
+			int curTime = SDL_GetTicks();
+			t = curTime % 1000;
+			curTime /= 1000;
+			second = curTime % 60;
+			curTime /= 60;
+			minute = curTime % 60;
+			curTime /= 60;
+			hour = curTime;
+			if (!timer.loadText(std::to_string(hour) + ":" + std::to_string(minute) + ":" + std::to_string(second) + ":" + std::to_string(t), textColor, gRenderer, gFont))
 			{
 				std::cout << "Failed to load timer text texture\n";
-
 			}
-			timer.renderText(SCREEN_WIDTH/2-timer.getWidth()/2,655,gRenderer);
+			timer.renderText(SCREEN_WIDTH / 2 - timer.getWidth() / 2, 655, gRenderer);
 		}
 
 		// Update screen
 		SDL_RenderPresent(gRenderer);
 		if (win == true)
 		{
-			
-			
-			if (levelNum<LEVEL_NUMBER) run(levelNum+1);
+
+			if (levelNum < LEVEL_NUMBER)
+			{
+				closeMedia();
+				run(levelNum + 1);
+			}
 			else
 			{
-				level.renderVictoryScreen(gRenderer);
+				SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
+				SDL_RenderClear(gRenderer);
+				
+				
+				if (!loadVictoryScreen())
+				{
+					std::cout << "Failed to load out Victory screen\n";
+					return ;
+				}
+				
+				renderVictoryScreen();
+				
 				SDL_RenderPresent(gRenderer);
 				SDL_Delay(3000);
 			}
 			break;
-			
 		}
 	}
 	closeMedia();
@@ -476,7 +520,7 @@ int main(int argc, char **argv)
 		std::cout << "Failed to initialize!\n";
 		return -1;
 	}
-	run(1);
+	run(LEVEL_NUMBER);
 	// Free resources
 	closeGame();
 }
