@@ -81,6 +81,9 @@ public:
 	//To check if the player is on the tile of type i
 	bool isTouchTile(Level level, int value);
 
+	//For debug
+	void getInfo();
+
 	
 
 private:
@@ -104,4 +107,8 @@ private:
 
 	//Current spawn point
 	int pSpawnPosX,pSpawnPosY;
+
+	//To check if they're currently moving
+	bool isUp,isLeft,isRight,isDown;
+
 };

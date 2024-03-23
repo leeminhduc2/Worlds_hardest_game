@@ -30,6 +30,13 @@ Player::Player()
 	// Initialize spawn point
 	pSpawnPosX = 0;
 	pSpawnPosY = 0;
+
+	//Initialize moving states
+	isUp = 0;
+	isDown = 0;
+	isLeft = 0;
+	isRight = 0;
+
 }
 
 Player::~Player()
@@ -54,6 +61,10 @@ void Player::free()
 		pAlphaValue = 255;
 		pSpawnPosX = 0;
 		pSpawnPosY = 0;
+		isUp = 0;
+	isDown = 0;
+	isLeft = 0;
+	isRight = 0;
 	}
 }
 
@@ -124,6 +135,7 @@ int Player::getPlayerWidth()
 
 void Player::move(Level level)
 {
+	
 	// Move to the right or left
 	pPosX += pVelX;
 
@@ -202,65 +214,28 @@ void Player::handleEvent(SDL_Event &e)
 	if (e.type == SDL_KEYDOWN && e.key.repeat == 0)
 	{
 		// Adjust the velocity
-		switch (e.key.keysym.sym)
-		{
-		case SDLK_UP:
-			pVelY -= PLAYER_VEL;
-			break;
-		case SDLK_DOWN:
-			pVelY += PLAYER_VEL;
-			break;
-		case SDLK_LEFT:
-			pVelX -= PLAYER_VEL;
-			break;
-		case SDLK_RIGHT:
-			pVelX += PLAYER_VEL;
-			break;
-		case SDLK_w:
-			pVelY -= PLAYER_VEL;
-			break;
-		case SDLK_s:
-			pVelY += PLAYER_VEL;
-			break;
-		case SDLK_a:
-			pVelX -= PLAYER_VEL;
-			break;
-		case SDLK_d:
-			pVelX += PLAYER_VEL;
-			break;
-		}
+		if (e.key.keysym.sym==SDLK_UP&&!isUp)
+			pVelY -= PLAYER_VEL,isUp=1;
+		if (e.key.keysym.sym==SDLK_DOWN&&!isDown)
+			pVelY += PLAYER_VEL,isDown=1;
+		if (e.key.keysym.sym==SDLK_LEFT&&!isLeft)
+			pVelX -= PLAYER_VEL,isLeft=1;
+		if (e.key.keysym.sym==SDLK_RIGHT&&!isRight)
+			pVelX += PLAYER_VEL,isRight=1;
+		
 	}
 	// If a key was released
 	else if (e.type == SDL_KEYUP && e.key.repeat == 0)
 	{
 		// Adjust the velocity
-		switch (e.key.keysym.sym)
-		{
-		case SDLK_UP:
-			pVelY += PLAYER_VEL;
-			break;
-		case SDLK_DOWN:
-			pVelY -= PLAYER_VEL;
-			break;
-		case SDLK_LEFT:
-			pVelX += PLAYER_VEL;
-			break;
-		case SDLK_RIGHT:
-			pVelX -= PLAYER_VEL;
-			break;
-		case SDLK_w:
-			pVelY += PLAYER_VEL;
-			break;
-		case SDLK_s:
-			pVelY -= PLAYER_VEL;
-			break;
-		case SDLK_a:
-			pVelX += PLAYER_VEL;
-			break;
-		case SDLK_d:
-			pVelX -= PLAYER_VEL;
-			break;
-		}
+		if (e.key.keysym.sym==SDLK_UP&&isUp)
+			pVelY += PLAYER_VEL,isUp=0;
+		if (e.key.keysym.sym==SDLK_DOWN&&isDown)
+			pVelY -= PLAYER_VEL,isDown=0;
+		if (e.key.keysym.sym==SDLK_LEFT&&isLeft)
+			pVelX += PLAYER_VEL,isLeft=0;
+		if (e.key.keysym.sym==SDLK_RIGHT&&isRight)
+			pVelX -= PLAYER_VEL,isRight=0;
 	}
 }
 
@@ -400,4 +375,9 @@ bool Player::isTouchTile(Level level, int value)
 	if (!level.getMapValue2(pPosY + PLAYER_WIDTH - 1, pPosX + PLAYER_HEIGHT - 1)==value)
 		return 1;
 	return 0;
+}
+
+void Player::getInfo()
+{
+	std::cerr << pPosX << " " << pVelX << " " << pPosY << " " << pVelY << "\n";
 }

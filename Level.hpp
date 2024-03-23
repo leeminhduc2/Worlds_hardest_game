@@ -60,6 +60,14 @@ public:
     //To get the number of checkpoints (including start and finish)
     int getCheckpointNum();
 
+    //To load victory screen
+    bool loadVictoryScreen(SDL_Renderer *gRenderer);
+
+    //To render victory screen
+    void renderVictoryScreen(SDL_Renderer *gRenderer);
+
+    
+
 private: 
 
     // The map that will be stored inside an array
@@ -70,6 +78,23 @@ private:
     std::vector <int> spawnX;
     std::vector <int> spawnY;
 
+    //The victory screen
+    SDL_Texture *vTexture;
+
+    //Death counter parameters
+    SDL_Texture *dcTexture;
+    int dcWidth,dcHeight;
+    
+    //Coin counter parameters
+    SDL_Texture *ccTexture;
+    int ccWidth,ccHeight;
+
+    //Round counter parameters
+    SDL_Texture *rcTexture;
+    int rcWidth,rcHeight;
+
+
+    //Timer parameters
 
 
     
