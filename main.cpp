@@ -19,7 +19,7 @@ SDL_Renderer *gRenderer = NULL;
 SDL_Texture *vTexture=NULL;
 
 // The number of level
-const int LEVEL_NUMBER = 7;
+const int LEVEL_NUMBER = 13;
 
 // Globally used font
 TTF_Font *gFont = NULL;
@@ -368,7 +368,7 @@ void run(int levelNum)
 				}
 			}
 
-			// Move the dot
+			// Move the player
 			player.move(level);
 			// To check if the player touches any tile, including the start and finishes
 
@@ -412,7 +412,7 @@ void run(int levelNum)
 		}
 
 		for (int i = 0; i < nCoin; i++)
-			if (coins[i].getStatus() == 1)
+			if (coins[i].getStatus() >= 1)
 			{
 				coins[i].setAlpha(std::max(0, coins[i].getAlphaValue() - 3));
 			}
@@ -504,11 +504,11 @@ void run(int levelNum)
 				}
 				
 				renderVictoryScreen();
-				
 				SDL_RenderPresent(gRenderer);
-				SDL_Delay(3000);
+				
+				
 			}
-			break;
+			quit = 1;
 		}
 	}
 	closeMedia();
@@ -520,7 +520,8 @@ int main(int argc, char **argv)
 		std::cout << "Failed to initialize!\n";
 		return -1;
 	}
-	run(LEVEL_NUMBER);
+	run(1);
 	// Free resources
 	closeGame();
+	return 0;
 }

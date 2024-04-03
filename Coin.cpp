@@ -16,7 +16,6 @@ Coin::~Coin()
 {
     free();
 }
-
 bool Coin::loadFromFile(std::string path, SDL_Renderer *gRenderer)
 {
     // Remove the existing texture
