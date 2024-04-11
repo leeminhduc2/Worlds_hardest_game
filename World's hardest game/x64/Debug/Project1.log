@@ -1,0 +1,14 @@
+﻿  Dot.cpp
+  Player.cpp
+G:\World's_hardest_game_by_leeminhduc2\Dot.cpp(78,23): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+G:\World's_hardest_game_by_leeminhduc2\Dot.cpp(79,23): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+G:\World's_hardest_game_by_leeminhduc2\Dot.cpp(83,23): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+G:\World's_hardest_game_by_leeminhduc2\Dot.cpp(84,23): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+G:\World's_hardest_game_by_leeminhduc2\Player.cpp(284,23): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+G:\World's_hardest_game_by_leeminhduc2\Player.cpp(285,23): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+G:\World's_hardest_game_by_leeminhduc2\Player.cpp(289,23): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+G:\World's_hardest_game_by_leeminhduc2\Player.cpp(290,23): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+  main.cpp
+G:\World's_hardest_game_by_leeminhduc2\main.cpp(290,37): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  Generating Code...
+  Project1.vcxproj -> G:\main\x64\Debug\Project1.exe
