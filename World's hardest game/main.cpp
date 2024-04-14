@@ -50,11 +50,15 @@ void renderVictoryScreen();
 // To handle cheat code. Return 1 if the "SKIP" cheat code is activated, 0 otherwise
 bool handleCheatCode(SDL_Event& e);
 
-// To handle main menu. Further details will be updated soon.
-int handleMainMenu(SDL_Event& e);
-
-// To run main menu UI
+// To run main menu interface
 void runMainMenu();
+
+// To check if the mouse button is inside the texture/text
+bool isMouseInside(int x, int y, int x1, int y1, int width, int height);
+
+//To run tutorial menu interface
+void runTutorialMenu();
+
 
 // Player
 Player player;
@@ -91,15 +95,25 @@ Mix_Chunk *gBell = NULL;
 Mix_Chunk *gSmack = NULL;
 Mix_Chunk *gDing = NULL;
 
-//Main menu user interface
-UI mainMenu(1, 0);
 
-int handleMainMenu(SDL_Event& e)
+
+
+
+//Mode select menu interface
+UI modeMenu(5, 0);
+
+//Hardness select menu interface
+UI hardnessMenu(5, 0);
+
+//Victory menu interface
+UI victoryMenu(2, 3);
+
+//Level select menu
+UI levelMenu(31, 0);
+
+bool isMouseInside(int x, int y, int x1, int y1, int width, int height)
 {
-	if (e.type == SDL_KEYDOWN && e.key.repeat == 0)
-		if (e.key.keysym.sym == SDLK_p)
-			return 1; //Player has pressed 
-	return 0;
+	return (x >= x1 && x < x1 + width && y >= y1 && y < y1 + height);
 }
 
 //Cheat code masks
@@ -429,6 +443,7 @@ void run(int levelNum)
 			if (event.type == SDL_QUIT)
 			{
 				quit = true;
+				exit(0);
 			}
 
 			// Handle input for the dot
@@ -615,35 +630,118 @@ void run(int levelNum)
 }
 void runMainMenu()
 {
+	//Main menu interface
+	UI mainMenu(7, 0);
 	mainMenu.loadTexture("Resources/main_menu.png", gRenderer, 0);
+	mainMenu.loadTexture("Resources/button_playgame.png", gRenderer, 1);
+	mainMenu.setTextureCoor(SCREEN_WIDTH / 2 - mainMenu.getTextureWidth(1) / 2, 200,1);
+	mainMenu.loadTexture("Resources/button_playgame_1.png", gRenderer, 2);
+	mainMenu.setTextureCoor(SCREEN_WIDTH / 2 - mainMenu.getTextureWidth(2) / 2, 200, 2);
+	mainMenu.loadTexture("Resources/button_tutorial.png", gRenderer, 3);
+	mainMenu.setTextureCoor(SCREEN_WIDTH / 2 - mainMenu.getTextureWidth(3) / 2, 350, 3);
+	mainMenu.loadTexture("Resources/button_tutorial_1.png", gRenderer, 4);
+	mainMenu.setTextureCoor(SCREEN_WIDTH / 2 - mainMenu.getTextureWidth(4) / 2, 350, 4);
+	mainMenu.loadTexture("Resources/button_exit.png", gRenderer, 5);
+	mainMenu.setTextureCoor(SCREEN_WIDTH / 2 - mainMenu.getTextureWidth(5) / 2, 500, 5);
+	mainMenu.loadTexture("Resources/button_exit_1.png", gRenderer, 6);
+	mainMenu.setTextureCoor(SCREEN_WIDTH / 2 - mainMenu.getTextureWidth(6) / 2, 500, 6);
 	bool quit = 0;
 	SDL_Event event;
-	std::cerr << "OK";
 	while (!quit)
 	{
+		int x, y;
+		SDL_GetMouseState(&x, &y);
 		while (SDL_PollEvent(&event) != 0)
 		{
 			// User requests quit
 			if (event.type == SDL_QUIT)
 			{
-				
 				quit = true;
+				exit(0);
 			}
 
 			// Handle input for the main menu
-			if (event.type == SDL_KEYUP && event.key.keysym.sym == SDLK_p)
+			if (event.type == SDL_MOUSEBUTTONUP && isMouseInside(x, y, mainMenu.getTextureX(1), mainMenu.getTextureY(1), mainMenu.getTextureWidth(1), mainMenu.getTextureHeight(1)))
 			{
 				mainMenu.free();
+				Mix_PlayChannel(-1, gBell, 0);
 				run(1);
 				quit = 1;
 			}
+			else 
+			if (event.type == SDL_MOUSEBUTTONUP && isMouseInside(x, y, mainMenu.getTextureX(5), mainMenu.getTextureY(5), mainMenu.getTextureWidth(5), mainMenu.getTextureHeight(5)))
+			{
+				Mix_PlayChannel(-1, gBell, 0);
+				quit = 1;
+			}
+			else
+			if (event.type == SDL_MOUSEBUTTONUP && isMouseInside(x, y, mainMenu.getTextureX(3), mainMenu.getTextureY(3), mainMenu.getTextureWidth(5), mainMenu.getTextureHeight(3)))
+			{
+				Mix_PlayChannel(-1, gBell, 0);
+				std::cerr << "HAS STARTED TO RUN\n";
+				runTutorialMenu();
+				std::cerr << "RUN SUCCESSFULLY\n";
+			}
+
 		}
-		if (quit == 1) break; //asdsa
+		if (quit == 1) break;
+		//Render main manu
+
 		mainMenu.renderTexture(0, gRenderer);
+		mainMenu.renderTexture(1 + isMouseInside(x, y, mainMenu.getTextureX(1), mainMenu.getTextureY(1), mainMenu.getTextureWidth(1), mainMenu.getTextureHeight(1)), gRenderer);
+		mainMenu.renderTexture(3 + isMouseInside(x, y, mainMenu.getTextureX(3), mainMenu.getTextureY(3), mainMenu.getTextureWidth(3), mainMenu.getTextureHeight(3)), gRenderer);
+		mainMenu.renderTexture(5 + isMouseInside(x, y, mainMenu.getTextureX(5), mainMenu.getTextureY(5), mainMenu.getTextureWidth(5), mainMenu.getTextureHeight(5)), gRenderer);
+		//Present the screen to window
 		SDL_RenderPresent(gRenderer);
 	}
 	mainMenu.free();
 	
+}
+void runTutorialMenu()
+{
+	//Tutorial menu interface
+	UI tutorialMenu(1, 2);
+	SDL_Color textColor = { 0, 0, 0, 255 };
+	SDL_Color textColorC = { 237,28,36,255 };
+
+	tutorialMenu.loadTexture("Resources/tutorial_menu.png",gRenderer,0);
+	tutorialMenu.loadText("BACK TO MAIN MENU", textColor, gRenderer, gFont, 0);
+	tutorialMenu.setTextCoor(SCREEN_WIDTH - tutorialMenu.getTextWidth(0) - 10, SCREEN_HEIGHT - tutorialMenu.getTextHeight(0) - 10, 0);
+	tutorialMenu.loadText("BACK TO MAIN MENU", textColorC, gRenderer, gFont, 1);
+	tutorialMenu.setTextCoor(SCREEN_WIDTH - tutorialMenu.getTextWidth(1) - 10, SCREEN_HEIGHT - tutorialMenu.getTextHeight(1) - 10, 1);
+	bool quit = 0;
+	SDL_Event event;
+	while (!quit)
+	{
+		int x, y;
+		SDL_GetMouseState(&x, &y);
+		while (SDL_PollEvent(&event) != 0)
+		{
+			// User requests quit
+			if (event.type == SDL_QUIT)
+			{
+
+				quit = true;
+				exit(0);
+			}
+
+			// Handle input for the main menu
+			if (event.type == SDL_MOUSEBUTTONUP && isMouseInside(x, y, tutorialMenu.getTextX(0), tutorialMenu.getTextY(0), tutorialMenu.getTextWidth(0), tutorialMenu.getTextHeight(0)))
+			{
+				quit = true;
+			}
+
+		}
+		if (quit == 1) break;
+		//Render tutorial menu manu
+		tutorialMenu.renderTexture(0, gRenderer);
+		tutorialMenu.renderText(0 + isMouseInside(x, y, tutorialMenu.getTextX(0), tutorialMenu.getTextY(0), tutorialMenu.getTextWidth(0), tutorialMenu.getTextHeight(0)),gRenderer);
+
+		//Present the screen to window
+		SDL_RenderPresent(gRenderer);
+		
+	}
+	tutorialMenu.free();
 }
 int main(int argc, char **argv)
 {

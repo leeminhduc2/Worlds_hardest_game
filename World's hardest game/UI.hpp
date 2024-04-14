@@ -34,6 +34,22 @@ public:
 	//To render the ith text
 	void renderText(int i, SDL_Renderer* gRenderer, SDL_Rect* clip = NULL);
 
+	//To get the coordinates of the ith texture
+	int getTextureX(int i);
+	int getTextureY(int i);
+	
+	//To get the dimensions of the ith texture
+	int getTextureWidth(int i);
+	int getTextureHeight(int i);
+
+	//To get the coordinates of the ith text
+	int getTextX(int i);
+	int getTextY(int i);
+
+	//To get the dimensions of the ith text
+	int getTextWidth(int i);
+	int getTextHeight(int i);
+
 
 
 private:

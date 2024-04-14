@@ -7,16 +7,12 @@
       "RelativeMoniker": "D:0:0:{6B6A3140-0451-48AB-A464-31C74FF86E64}|World\u0027s hardest game\\World\u0027s hardest game.vcxproj|solutionrelative:World\u0027s hardest game\\main.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{6B6A3140-0451-48AB-A464-31C74FF86E64}|World\u0027s hardest game\\World\u0027s hardest game.vcxproj|G:\\World\u0027s hardest game\\World\u0027s hardest game\\Player.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{6B6A3140-0451-48AB-A464-31C74FF86E64}|World\u0027s hardest game\\World\u0027s hardest game.vcxproj|solutionrelative:World\u0027s hardest game\\Player.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+      "AbsoluteMoniker": "D:0:0:{6B6A3140-0451-48AB-A464-31C74FF86E64}|World\u0027s hardest game\\World\u0027s hardest game.vcxproj|G:\\World\u0027s hardest game\\World\u0027s hardest game\\UI.hpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{6B6A3140-0451-48AB-A464-31C74FF86E64}|World\u0027s hardest game\\World\u0027s hardest game.vcxproj|solutionrelative:World\u0027s hardest game\\UI.hpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{6B6A3140-0451-48AB-A464-31C74FF86E64}|World\u0027s hardest game\\World\u0027s hardest game.vcxproj|G:\\World\u0027s hardest game\\World\u0027s hardest game\\UI.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
       "RelativeMoniker": "D:0:0:{6B6A3140-0451-48AB-A464-31C74FF86E64}|World\u0027s hardest game\\World\u0027s hardest game.vcxproj|solutionrelative:World\u0027s hardest game\\UI.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{6B6A3140-0451-48AB-A464-31C74FF86E64}|World\u0027s hardest game\\World\u0027s hardest game.vcxproj|G:\\World\u0027s hardest game\\World\u0027s hardest game\\UI.hpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{6B6A3140-0451-48AB-A464-31C74FF86E64}|World\u0027s hardest game\\World\u0027s hardest game.vcxproj|solutionrelative:World\u0027s hardest game\\UI.hpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     }
   ],
   "DocumentGroupContainers": [
@@ -36,22 +32,23 @@
               "RelativeDocumentMoniker": "World\u0027s hardest game\\main.cpp",
               "ToolTip": "G:\\World\u0027s hardest game\\World\u0027s hardest game\\main.cpp",
               "RelativeToolTip": "World\u0027s hardest game\\main.cpp",
-              "ViewState": "AQIAAHkCAAAAAAAAAAAkwIACAAAfAAAA",
+              "ViewState": "AQIAAF8AAAAAAAAAAAAIwL8CAAAgAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
               "WhenOpened": "2024-04-11T04:18:16.379Z",
+              "IsPinned": true,
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 1,
-              "Title": "Player.cpp",
-              "DocumentMoniker": "G:\\World\u0027s hardest game\\World\u0027s hardest game\\Player.cpp",
-              "RelativeDocumentMoniker": "World\u0027s hardest game\\Player.cpp",
-              "ToolTip": "G:\\World\u0027s hardest game\\World\u0027s hardest game\\Player.cpp",
-              "RelativeToolTip": "World\u0027s hardest game\\Player.cpp",
-              "ViewState": "AQIAAHABAAAAAAAAAAAAAOYAAAAGAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
-              "WhenOpened": "2024-04-11T11:35:01.26Z",
+              "Title": "UI.hpp",
+              "DocumentMoniker": "G:\\World\u0027s hardest game\\World\u0027s hardest game\\UI.hpp",
+              "RelativeDocumentMoniker": "World\u0027s hardest game\\UI.hpp",
+              "ToolTip": "G:\\World\u0027s hardest game\\World\u0027s hardest game\\UI.hpp",
+              "RelativeToolTip": "World\u0027s hardest game\\UI.hpp",
+              "ViewState": "AQIAABIAAAAAAAAAAAAIwCQAAAABAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
+              "WhenOpened": "2024-04-12T09:25:04.229Z",
               "EditorCaption": ""
             },
             {
@@ -62,23 +59,9 @@
               "RelativeDocumentMoniker": "World\u0027s hardest game\\UI.cpp",
               "ToolTip": "G:\\World\u0027s hardest game\\World\u0027s hardest game\\UI.cpp",
               "RelativeToolTip": "World\u0027s hardest game\\UI.cpp",
-              "ViewState": "AQIAACcAAAAAAAAAAAAAADQAAAAoAAAA",
+              "ViewState": "AQIAAAYAAAAAAAAAAAAIwHcAAAAgAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
-              "WhenOpened": "2024-04-11T09:06:33.974Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "UI.hpp",
-              "DocumentMoniker": "G:\\World\u0027s hardest game\\World\u0027s hardest game\\UI.hpp",
-              "RelativeDocumentMoniker": "World\u0027s hardest game\\UI.hpp",
-              "ToolTip": "G:\\World\u0027s hardest game\\World\u0027s hardest game\\UI.hpp",
-              "RelativeToolTip": "World\u0027s hardest game\\UI.hpp",
-              "ViewState": "AQIAABgAAAAAAAAAAAAAABIAAAABAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
-              "WhenOpened": "2024-04-11T09:06:19.345Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-04-12T09:25:02.519Z"
             }
           ]
         }
