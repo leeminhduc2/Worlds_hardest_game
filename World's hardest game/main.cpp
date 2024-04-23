@@ -36,7 +36,7 @@ bool loadMedia();
 void closeGame();
 
 // Run a specific level
-void run(int i);
+void run(int i,int hardness,bool resetTimer,bool isSpeedrun);
 
 // To reset media
 void closeMedia();
@@ -59,6 +59,17 @@ bool isMouseInside(int x, int y, int x1, int y1, int width, int height);
 //To run tutorial menu interface
 void runTutorialMenu();
 
+//To run mode selection interface
+void runModeSelection();
+
+//to run hardness selection interface
+void runHardnessSelection(bool isSpeedrun=1, int level = 1);
+
+//To run victory interface
+void runvictoryMenu(bool isSpeedrun);
+
+//To run level selection interface
+void runLevelSelection();
 
 // Player
 Player player;
@@ -99,17 +110,8 @@ Mix_Chunk *gDing = NULL;
 
 
 
-//Mode select menu interface
-UI modeMenu(5, 0);
-
-//Hardness select menu interface
-UI hardnessMenu(5, 0);
-
-//Victory menu interface
-UI victoryMenu(2, 3);
-
-//Level select menu
-UI levelMenu(31, 0);
+//Start time for timer
+int startTime = 0;
 
 bool isMouseInside(int x, int y, int x1, int y1, int width, int height)
 {
@@ -411,16 +413,26 @@ void closeGame()
 	IMG_Quit();
 	SDL_Quit();
 }
-void run(int levelNum)
+void run(int levelNum,int hardness, bool resetTimer, bool isSpeedrun)
 {
-
+	UI gameMenu(0, 2);
+	SDL_Color textColor = { 255, 255, 255, 255 };
+	SDL_Color textColorC = { 237,28,36,255 };
+	gameMenu.loadText("BACK TO MAIN MENU", textColor, gRenderer, gFont, 0);
+	gameMenu.setTextCoor(SCREEN_WIDTH - 5 - gameMenu.getTextWidth(0), 655, 0);
+	gameMenu.loadText("BACK TO MAIN MENU", textColorC, gRenderer, gFont, 1);
+	gameMenu.setTextCoor(SCREEN_WIDTH - 5 - gameMenu.getTextWidth(1), 655, 1);
 	if (!loadMedia(levelNum))
 	{
 		std::cout << "Failed to load media for level " << levelNum << "!\n";
 		closeMedia();
 		return;
 	}
-
+	if (resetTimer)
+	{
+		startTime = SDL_GetTicks();
+		death = 0;
+	}
 	// Main loop flag
 	bool quit = 0;
 
@@ -434,7 +446,8 @@ void run(int levelNum)
 	// While application is running
 	while (!quit)
 	{
-
+		int x, y;
+		SDL_GetMouseState(&x, &y);
 		// Handle events on queue
 
 		while (SDL_PollEvent(&event) != 0)
@@ -453,15 +466,23 @@ void run(int levelNum)
 				win = 1;
 				Mix_PlayChannel(-1, gBell, 0);
 			}
+			if (event.type == SDL_MOUSEBUTTONUP && isMouseInside(x, y, gameMenu.getTextX(0), gameMenu.getTextY(0), gameMenu.getTextWidth(0), gameMenu.getTextHeight(0)))
+			{
+				gameMenu.free();
+				runMainMenu();
+				quit = true;
+
+			}
+			
 		}
 
-		int currentTime = SDL_GetTicks();
+		int currentTime = SDL_GetTicks()-startTime;
 		if (player.getPlayerStatus())
 		{
 
 			for (int j = 0; j < nDots; j++)
 			{
-				if (player.checkCollision(currentTime, dots[j]))
+				if (player.checkCollision(currentTime/2*hardness, dots[j]))
 				{
 					Mix_PlayChannel(-1, gSmack, 0);
 					player.setPStatus(0);
@@ -550,7 +571,7 @@ void run(int levelNum)
 
 		// Render dot
 		for (int i = 0; i < nDots; i++)
-			dots[i].render(currentTime, gRenderer);
+			dots[i].render(currentTime/2*hardness, gRenderer);
 
 		// Render player
 		player.render(player.getPlayerPosX(), player.getPlayerPosY(), gRenderer);
@@ -583,7 +604,7 @@ void run(int levelNum)
 		// Render timer count text texture
 		{
 			int hour, minute, second, t;
-			int curTime = SDL_GetTicks();
+			int curTime = currentTime;
 			t = curTime % 1000;
 			curTime /= 1000;
 			second = curTime % 60;
@@ -598,35 +619,37 @@ void run(int levelNum)
 			}
 			timer.renderText(SCREEN_WIDTH / 2 - timer.getWidth() / 2, 655, gRenderer);
 		}
-
+		gameMenu.renderText(0 + isMouseInside(x, y, gameMenu.getTextX(0), gameMenu.getTextY(0), gameMenu.getTextWidth(0), gameMenu.getTextHeight(0)), gRenderer);
 		// Update screen
 		SDL_RenderPresent(gRenderer);
 		if (win == true)
 		{
-
-			if (levelNum < LEVEL_NUMBER)
-			{
-				closeMedia();
-				run(levelNum + 1);
+			if (isSpeedrun) {
+				if (levelNum < LEVEL_NUMBER)
+				{
+					closeMedia();
+					run(levelNum + 1, hardness, 0,isSpeedrun);
+				}
+				else
+				{
+					closeMedia();
+					std::cerr << "RUNNING\n";
+					runvictoryMenu(1);
+					std::cerr << "SUCCESSFUL\n";
+				}
 			}
 			else
 			{
-				SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
-				SDL_RenderClear(gRenderer);
-
-				if (!loadVictoryScreen())
-				{
-					std::cout << "Failed to load out Victory screen\n";
-					return;
-				}
-
-				renderVictoryScreen();
-				SDL_RenderPresent(gRenderer);
+				closeMedia();
+				std::cerr << "RUNNING\n";
+				runvictoryMenu(0);
+				std::cerr << "SUCCESSFUL\n";
 			}
-			quit = 1;
+			break;
 		}
 	}
 	closeMedia();
+	gameMenu.free();
 }
 void runMainMenu()
 {
@@ -665,7 +688,7 @@ void runMainMenu()
 			{
 				mainMenu.free();
 				Mix_PlayChannel(-1, gBell, 0);
-				run(1);
+				runModeSelection();
 				quit = 1;
 			}
 			else 
@@ -742,6 +765,259 @@ void runTutorialMenu()
 		
 	}
 	tutorialMenu.free();
+}
+void runModeSelection()
+{
+	//Mode select menu interface
+	UI modeMenu(5, 0);
+	modeMenu.loadTexture("Resources/mode_select_menu.png", gRenderer, 0);
+	modeMenu.loadTexture("Resources/button_speedrun.png", gRenderer, 1);
+	modeMenu.setTextureCoor(SCREEN_WIDTH / 2 - modeMenu.getTextureWidth(1) / 2, 200, 1);
+	modeMenu.loadTexture("Resources/button_speedrun_1.png", gRenderer, 2);
+	modeMenu.setTextureCoor(SCREEN_WIDTH / 2 - modeMenu.getTextureWidth(2) / 2, 200, 2);
+	modeMenu.loadTexture("Resources/button_levelselect.png", gRenderer, 3);
+	modeMenu.setTextureCoor(SCREEN_WIDTH / 2 - modeMenu.getTextureWidth(3) / 2, 350, 3);
+	modeMenu.loadTexture("Resources/button_levelselect_1.png", gRenderer, 4);
+	modeMenu.setTextureCoor(SCREEN_WIDTH / 2 - modeMenu.getTextureWidth(4) / 2, 350, 4);
+	bool quit = 0;
+	SDL_Event event;
+	while (!quit)
+	{
+		int x, y;
+		SDL_GetMouseState(&x, &y);
+		while (SDL_PollEvent(&event) != 0)
+		{
+			// User requests quit
+			if (event.type == SDL_QUIT)
+			{
+				quit = true;
+				exit(0);
+			}
+
+			// Handle input for the main menu
+			if (event.type == SDL_MOUSEBUTTONUP && isMouseInside(x, y, modeMenu.getTextureX(1), modeMenu.getTextureY(1), modeMenu.getTextureWidth(1), modeMenu.getTextureHeight(1)))
+			{
+				modeMenu.free();
+				Mix_PlayChannel(-1, gBell, 0);
+				runHardnessSelection();
+				quit = 1;
+			}
+			else
+				if (event.type == SDL_MOUSEBUTTONUP && isMouseInside(x, y, modeMenu.getTextureX(3), modeMenu.getTextureY(3), modeMenu.getTextureWidth(3), modeMenu.getTextureHeight(3)))
+				{
+					modeMenu.free();
+					Mix_PlayChannel(-1, gBell, 0);
+					runLevelSelection();
+					quit = 1;
+					
+				}
+
+
+		}
+		if (quit == 1) break;
+		//Render main manu
+
+		modeMenu.renderTexture(0, gRenderer);
+		modeMenu.renderTexture(1 + isMouseInside(x, y, modeMenu.getTextureX(1), modeMenu.getTextureY(1), modeMenu.getTextureWidth(1), modeMenu.getTextureHeight(1)), gRenderer);
+		modeMenu.renderTexture(3 + isMouseInside(x, y, modeMenu.getTextureX(3), modeMenu.getTextureY(3), modeMenu.getTextureWidth(3), modeMenu.getTextureHeight(3)), gRenderer);
+		
+		//Present the screen to window
+		SDL_RenderPresent(gRenderer);
+	}
+	modeMenu.free();
+}
+void runHardnessSelection(bool isSpeedrun, int level)
+{
+	//Hardness select menu interface
+	UI hardnessMenu(5, 0);
+	hardnessMenu.loadTexture("Resources/hardness_menu.png", gRenderer, 0);
+	hardnessMenu.loadTexture("Resources/button_easy.png", gRenderer, 1);
+	hardnessMenu.setTextureCoor(SCREEN_WIDTH / 2 - hardnessMenu.getTextureWidth(1) / 2, 200, 1);
+	hardnessMenu.loadTexture("Resources/button_easy_1.png", gRenderer, 2);
+	hardnessMenu.setTextureCoor(SCREEN_WIDTH / 2 - hardnessMenu.getTextureWidth(2) / 2, 200, 2);
+	hardnessMenu.loadTexture("Resources/button_hard.png", gRenderer, 3);
+	hardnessMenu.setTextureCoor(SCREEN_WIDTH / 2 - hardnessMenu.getTextureWidth(3) / 2, 350, 3);
+	hardnessMenu.loadTexture("Resources/button_hard_1.png", gRenderer, 4);
+	hardnessMenu.setTextureCoor(SCREEN_WIDTH / 2 - hardnessMenu.getTextureWidth(4) / 2, 350, 4);
+	bool quit = 0;
+	SDL_Event event;
+	while (!quit)
+	{
+		int x, y;
+		SDL_GetMouseState(&x, &y);
+		while (SDL_PollEvent(&event) != 0)
+		{
+			// User requests quit
+			if (event.type == SDL_QUIT)
+			{
+				quit = true;
+				exit(0);
+			}
+
+			// Handle input for the main menu
+			if (event.type == SDL_MOUSEBUTTONUP && isMouseInside(x, y, hardnessMenu.getTextureX(1), hardnessMenu.getTextureY(1), hardnessMenu.getTextureWidth(1), hardnessMenu.getTextureHeight(1)))
+			{
+				hardnessMenu.free();
+				Mix_PlayChannel(-1, gBell, 0);
+				run(level,1,1,isSpeedrun);
+				quit = 1;
+			}
+			else
+				if (event.type == SDL_MOUSEBUTTONUP && isMouseInside(x, y, hardnessMenu.getTextureX(3), hardnessMenu.getTextureY(3), hardnessMenu.getTextureWidth(3), hardnessMenu.getTextureHeight(3)))
+				{
+					hardnessMenu.free();
+					Mix_PlayChannel(-1, gBell, 0);
+					run(level,2,1, isSpeedrun);
+					quit = 1;
+
+				}
+
+
+		}
+		if (quit == 1) break;
+		//Render main manu
+
+		hardnessMenu.renderTexture(0, gRenderer);
+		hardnessMenu.renderTexture(1 + isMouseInside(x, y, hardnessMenu.getTextureX(1), hardnessMenu.getTextureY(1), hardnessMenu.getTextureWidth(1), hardnessMenu.getTextureHeight(1)), gRenderer);
+		hardnessMenu.renderTexture(3 + isMouseInside(x, y, hardnessMenu.getTextureX(3), hardnessMenu.getTextureY(3), hardnessMenu.getTextureWidth(3), hardnessMenu.getTextureHeight(3)), gRenderer);
+
+		//Present the screen to window
+		SDL_RenderPresent(gRenderer);
+	}
+	hardnessMenu.free();
+}
+void runvictoryMenu(bool isSpeedrun)
+{
+	//Victory menu interface
+	UI victoryMenu(2, 4);
+	int currentTime = SDL_GetTicks() - startTime;
+
+	SDL_Color textColor = { 0, 0, 0, 255 };
+	SDL_Color textColorC = { 237,28,36,255 };
+
+	victoryMenu.loadTexture("Resources/level_win_menu.png", gRenderer, 0);
+	victoryMenu.loadTexture("Resources/speedrun_win_menu.png", gRenderer, 1);
+	victoryMenu.loadText("BACK TO MAIN MENU", textColor, gRenderer, gFont, 0);
+	victoryMenu.setTextCoor(SCREEN_WIDTH - victoryMenu.getTextWidth(0) - 10, SCREEN_HEIGHT - victoryMenu.getTextHeight(0) - 10, 0);
+	victoryMenu.loadText("BACK TO MAIN MENU", textColorC, gRenderer, gFont, 1);
+	victoryMenu.setTextCoor(SCREEN_WIDTH - victoryMenu.getTextWidth(1) - 10, SCREEN_HEIGHT - victoryMenu.getTextHeight(1) - 10, 1);
+	victoryMenu.loadText("DEATH: " + std::to_string(death), textColor, gRenderer, gFont,2);
+	victoryMenu.setTextCoor(SCREEN_WIDTH / 2 - victoryMenu.getTextWidth(2) / 2, 300, 2);
+	{
+		int hour, minute, second, t;
+		int curTime = currentTime;
+		t = curTime % 1000;
+		curTime /= 1000;
+		second = curTime % 60;
+		curTime /= 60;
+		minute = curTime % 60;
+		curTime /= 60;
+		hour = curTime;
+		t /= 10;
+		victoryMenu.loadText((hour < 10 ? "0" : "") + std::to_string(hour) + ":" + (minute < 10 ? "0" : "") + std::to_string(minute) + ":" + (second < 10 ? "0" : "") + std::to_string(second) + ":" + (t < 10 ? "0" : "") + std::to_string(t), textColor, gRenderer, gFont, 3);
+		victoryMenu.setTextCoor(SCREEN_WIDTH / 2 - victoryMenu.getTextWidth(3) / 2, 400, 3);
+	}
+	bool quit = 0;
+	SDL_Event event;
+	std::cerr << "OK\n";
+	while (!quit)
+	{
+		int x, y;
+		SDL_GetMouseState(&x, &y);
+		while (SDL_PollEvent(&event) != 0)
+		{
+			// User requests quit
+			if (event.type == SDL_QUIT)
+			{
+
+				quit = true;
+				exit(0);
+			}
+
+			// Handle input for the main menu
+			if (event.type == SDL_MOUSEBUTTONUP && isMouseInside(x, y, victoryMenu.getTextX(0), victoryMenu.getTextY(0), victoryMenu.getTextWidth(0), victoryMenu.getTextHeight(0)))
+			{
+				victoryMenu.free();
+				runMainMenu();
+				quit = true;
+				
+			}
+
+		}
+		if (quit == 1) break;
+		//Render tutorial menu manu
+		victoryMenu.renderTexture(0 + isSpeedrun, gRenderer);
+		victoryMenu.renderText(0 + isMouseInside(x, y, victoryMenu.getTextX(0), victoryMenu.getTextY(0), victoryMenu.getTextWidth(0), victoryMenu.getTextHeight(0)), gRenderer);
+		victoryMenu.renderText(2, gRenderer);
+		victoryMenu.renderText(3, gRenderer);
+		//Present the screen to window
+		SDL_RenderPresent(gRenderer);
+
+	}
+	victoryMenu.free();
+}
+void runLevelSelection()
+{
+	//Level select menu
+	UI levelMenu(16, 30);
+	SDL_Color textColor = { 0, 0, 0, 255 };
+	SDL_Color textColorC = { 237,28,36,255 };
+	levelMenu.loadTexture("Resources/screen.png", gRenderer, 0);
+	for (int i = 1; i < 16; i++)
+	{
+		levelMenu.loadTexture("Resources/green_square.png", gRenderer, i);
+		levelMenu.setTextureCoor(90 + ((i - 1) % 5) * 150, 155 + ((i - 1) / 5) * 150,i);
+	}
+	for (int i = 0; i < 30; i+=2)
+	{
+		levelMenu.loadText(std::to_string(i / 2 + 1), textColor, gRenderer, gFont, i);
+		levelMenu.loadText(std::to_string(i / 2 + 1), textColorC, gRenderer, gFont, i+1);
+		levelMenu.setTextCoor(90 + ((i / 2) % 5) * 150 + 50 - levelMenu.getTextWidth(i)/2, 155 + ((i / 2) / 5) * 150 + 50 - levelMenu.getTextHeight(i)/2, i);
+		levelMenu.setTextCoor(90 + ((i / 2) % 5) * 150 + 50 - levelMenu.getTextWidth(i+1) / 2, 155 + ((i / 2) / 5) * 150 + 50 - levelMenu.getTextHeight(i+1) / 2, i+1);
+	}
+	bool quit = 0;
+	SDL_Event event;
+	
+	while (!quit)
+	{
+		int x, y;
+		SDL_GetMouseState(&x, &y);
+		while (SDL_PollEvent(&event) != 0)
+		{
+			// User requests quit
+			if (event.type == SDL_QUIT)
+			{
+
+				quit = true;
+				exit(0);
+			}
+
+			// Handle input for the main menu
+			for (int i = 1; i <= 15; i++)
+			{
+				if (event.type == SDL_MOUSEBUTTONUP && isMouseInside(x, y, levelMenu.getTextureX(i), levelMenu.getTextureY(i), levelMenu.getTextureWidth(i), levelMenu.getTextureHeight(i)))
+				{
+					levelMenu.free();
+					runHardnessSelection(0, i);
+					quit = true;
+
+				}
+			}
+
+		}
+		if (quit == 1) break;
+		//Render tutorial menu manu
+		for (int i = 0; i < 16; i++)
+			levelMenu.renderTexture(i, gRenderer);
+		for (int i = 0; i < 30; i += 2)
+		{
+			levelMenu.renderText(i + isMouseInside(x, y, levelMenu.getTextureX(i/2+1), levelMenu.getTextureY(i/2+1), levelMenu.getTextureWidth(i/2+1), levelMenu.getTextureHeight(i/2+1)), gRenderer);
+		}
+		//Present the screen to window
+		SDL_RenderPresent(gRenderer);
+
+	}
+	levelMenu.free();
 }
 int main(int argc, char **argv)
 {
