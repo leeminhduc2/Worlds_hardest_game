@@ -1,4 +1,4 @@
 ﻿G:\Program Files (G Disk)\Visual Studio\MSBuild\Microsoft\VC\v170\Microsoft.CppBuild.targets(531,5): warning MSB8028: The intermediate directory (x64\Debug\) contains files shared from another project (Project1.vcxproj).  This can lead to incorrect clean and rebuild behavior.
   main.cpp
-G:\World's hardest game\World's hardest game\main.cpp(370,37): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+G:\World's hardest game\World's hardest game\main.cpp(356,38): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
   World's hardest game.vcxproj -> G:\World's hardest game\x64\Debug\World's hardest game.exe

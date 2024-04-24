@@ -11,14 +11,16 @@
 #include "HUD_Texture.hpp"
 #include "UI.hpp"
 
+//Game state constants
+enum GAME_STATE {
+	GAME_MENU, GAME_TUTORIAL, GAME_MODESELECT, GAME_HARDNESS, GAME_LEVELSELECT, GAME_MAIN, GAME_WIN
+};
+
 // The window we are rendering to
 SDL_Window *gWindow = NULL;
 
 // The window renderer
 SDL_Renderer *gRenderer = NULL;
-
-//
-SDL_Texture *vTexture = NULL;
 
 // The number of level
 const int LEVEL_NUMBER = 13;
@@ -29,31 +31,22 @@ TTF_Font *gFont = NULL;
 // Starts up SDL and creates window
 bool init();
 
-// Loads media
-bool loadMedia();
-
 // Frees media and shuts down SDL
 void closeGame();
 
 // Run a specific level
-void run(int i,int hardness,bool resetTimer,bool isSpeedrun);
+void run();
 
-// To reset media
-void closeMedia();
 
-// To load victory screen
-bool loadVictoryScreen();
 
-// To render victory screen
-void renderVictoryScreen();
 
-// To handle cheat code. Return 1 if the "SKIP" cheat code is activated, 0 otherwise
+// To handle cheat code. Return 1 if both 4 buttons "S","K","I","P" is pressed, 0 otherwise
 bool handleCheatCode(SDL_Event& e);
 
 // To run main menu interface
 void runMainMenu();
 
-// To check if the mouse button is inside the texture/text
+// To check if the mouse button is inside any texture/text
 bool isMouseInside(int x, int y, int x1, int y1, int width, int height);
 
 //To run tutorial menu interface
@@ -63,40 +56,19 @@ void runTutorialMenu();
 void runModeSelection();
 
 //to run hardness selection interface
-void runHardnessSelection(bool isSpeedrun=1, int level = 1);
+void runHardnessSelection();
 
 //To run victory interface
-void runvictoryMenu(bool isSpeedrun);
+void runvictoryMenu();
 
 //To run level selection interface
 void runLevelSelection();
 
-// Player
-Player player;
-
-// Level
-Level level;
-
-// Dots
-Dot *dots;
-int nDots;
-
-// Coins
-Coin *coins;
-int nCoin, curCoin, unsavedCoin;
-
-// Death count texture
-HUD_Text deathCount;
-int death;
-
-// Coin count texture
-HUD_Text coinCount;
-
-// Level count texture
-HUD_Text levelCount;
+// Death counter
+int death = 0;
 
 // Timer texture
-HUD_Text timer;
+HUD_Text timer ;
 
 // The music that will be played
 Mix_Music *gMusic = NULL;
@@ -106,12 +78,9 @@ Mix_Chunk *gBell = NULL;
 Mix_Chunk *gSmack = NULL;
 Mix_Chunk *gDing = NULL;
 
-
-
-
-
 //Start time for timer
 int startTime = 0;
+
 
 bool isMouseInside(int x, int y, int x1, int y1, int width, int height)
 {
@@ -120,10 +89,9 @@ bool isMouseInside(int x, int y, int x1, int y1, int width, int height)
 
 //Cheat code masks
 bool isS,isK,isI,isP,isNR;
-
 bool handleCheatCode(SDL_Event& e)
 {
-	
+
 	// If a key was pressed
 	if (e.type == SDL_KEYDOWN && e.key.repeat == 0)
 	{
@@ -157,53 +125,16 @@ bool handleCheatCode(SDL_Event& e)
 		isNR = 1;
 		return 1;
 	}
-	if (isNR && !(isK | isS | isI | isP)) isNR = 0;
+	if (isNR && !(isK || isS || isI || isP)) isNR = 0;
 	return 0;
 }
-void renderVictoryScreen()
-{
-	// Set up rendering space and render to screen
-	SDL_Rect renderRect = {0, 0, SCREEN_WIDTH, SCREEN_WIDTH};
 
-	// Render to screen
-	SDL_RenderCopy(gRenderer, vTexture, &renderRect, &renderRect);
-}
-bool loadVictoryScreen()
-{
-	// The final texture
-	SDL_Texture *newTexture = NULL;
+//Game management variables
+int levelNum = 1, hardness = 0, resetTimer = 0, isSpeedrun = 0;
+int gameState = 0;
+std::stack <int> st;
 
-	// Load image
-	SDL_Surface *loadedSurface = IMG_Load("Resources/Victory_Screen.jpg");
-	if (loadedSurface == NULL)
-	{
-		std::cout << "Unable to load image "
-				  << "Resources/Victory_Screen.jpg"
-				  << "with exitcode " << IMG_GetError();
-	}
-	else
-	{
-		// Color key image
-		SDL_SetColorKey(loadedSurface, SDL_TRUE, SDL_MapRGB(loadedSurface->format, 0, 0xFF, 0xFF));
 
-		// Create texture from surface pixels
-		newTexture = SDL_CreateTextureFromSurface(gRenderer, loadedSurface);
-		if (newTexture == NULL)
-		{
-			std::cout << "Unable to create texture "
-					  << "Resources/Victory_Screen.jpg"
-					  << "with exitcode " << SDL_GetError();
-		}
-
-		// Get rid of old loaded surface
-		SDL_FreeSurface(loadedSurface);
-	}
-
-	// Return success
-	vTexture = newTexture;
-
-	return vTexture != NULL;
-}
 bool init()
 {
 	// Initialization flag
@@ -287,110 +218,6 @@ bool init()
 	gSmack = Mix_LoadWAV("Resources/Soundtracks/smack.wav");
 	return success;
 }
-bool loadMedia(int levelNum)
-{
-	// Loading success flag
-	bool success = 1;
-
-	// Load level
-	level.readLevelData("Resources/Level_datas/level" + std::to_string(levelNum) + ".txt");
-
-	// Loads player
-	if (!player.loadFile("Resources/Player.bmp", gRenderer))
-	{
-		std::cout << "Failed to load out player!\n";
-		return 0;
-	}
-	else
-	{
-
-		player.setBlendMode(SDL_BLENDMODE_BLEND);
-
-		player.setSpawnPoint(level.getSpawnPointX(0), level.getSpawnPointY(0));
-		player.gotoSpawnPoint();
-	}
-
-	// Loads coins
-	{
-		curCoin = unsavedCoin = 0;
-		std::ifstream inp;
-		inp.open("Resources/Level_datas/level" + std::to_string(levelNum) + "_coins.txt");
-
-		inp >> nCoin;
-		coins = new Coin[nCoin];
-		for (int i = 0; i < nCoin; i++)
-		{
-
-			int x, y;
-			inp >> x >> y;
-
-			coins[i].setX(x);
-			coins[i].setY(y);
-
-			// Load a coin
-			if (!coins[i].loadFromFile("Resources/coin_sheet.png", gRenderer))
-			{
-				std::cout << "Failed to load out coin!\n";
-				return 0;
-			}
-			else
-			{
-				coins[i].setBlendMode(SDL_BLENDMODE_BLEND);
-			}
-		}
-		inp.close();
-	}
-
-	// Load dots
-	{
-		std::ifstream inp;
-		inp.open("Resources/Level_datas/level" + std::to_string(levelNum) + "_dots.txt");
-		int m;
-		inp >> m;
-		nDots = m;
-		dots = new Dot[nDots];
-		while (m--)
-		{
-
-			// Loads a dot
-			if (!dots[m].loadImage("Resources/Dot.bmp", gRenderer))
-			{
-				std::cout << "Failed to load out dot!\n";
-				return 0;
-			}
-
-			int n;
-			inp >> n;
-			for (int i = 1; i <= n; i++)
-			{
-
-				double xF, xS, yF, yS, moveTime,rad;
-				bool isCircular;
-				inp >> xS >> yS >> xF >> yF >> moveTime >> isCircular >> rad;
-				dots[m].addPath(xS, yS, xF, yF, moveTime,isCircular, rad);
-			}
-		}
-		inp.close();
-	}
-	
-	return success;
-}
-void closeMedia()
-{
-	// Close level
-	level.free();
-
-	// Close player entity
-	player.free();
-
-	// Close dots
-	dots = NULL;
-	nDots = 0;
-
-	// Close and reset coin parameters
-	coins = NULL;
-	nCoin = curCoin = unsavedCoin = 0;
-}
 void closeGame()
 {
 
@@ -413,7 +240,7 @@ void closeGame()
 	IMG_Quit();
 	SDL_Quit();
 }
-void run(int levelNum,int hardness, bool resetTimer, bool isSpeedrun)
+void run()
 {
 	UI gameMenu(0, 2);
 	SDL_Color textColor = { 255, 255, 255, 255 };
@@ -422,11 +249,115 @@ void run(int levelNum,int hardness, bool resetTimer, bool isSpeedrun)
 	gameMenu.setTextCoor(SCREEN_WIDTH - 5 - gameMenu.getTextWidth(0), 655, 0);
 	gameMenu.loadText("BACK TO MAIN MENU", textColorC, gRenderer, gFont, 1);
 	gameMenu.setTextCoor(SCREEN_WIDTH - 5 - gameMenu.getTextWidth(1), 655, 1);
-	if (!loadMedia(levelNum))
+	
+
+	// Player
+	Player player;
+
+	// Level
+	Level level;
+
+	// Dots
+	Dot* dots;
+	int nDots = 0;
+
+	// Coins
+	Coin* coins;
+	int nCoin = 0, curCoin = 0, unsavedCoin = 0;
+
+	// Death count texture
+	HUD_Text deathCount;
+	
+
+	// Coin count texture
+	HUD_Text coinCount ;
+
+	// Level count texture
+	HUD_Text levelCount ;
 	{
-		std::cout << "Failed to load media for level " << levelNum << "!\n";
-		closeMedia();
-		return;
+		// Loading success flag
+		bool success = 1;
+
+		// Load level
+		level.readLevelData("Resources/Level_datas/level" + std::to_string(levelNum) + ".txt");
+
+		// Loads player
+		if (!player.loadFile("Resources/Player.bmp", gRenderer))
+		{
+			std::cout << "Failed to load out player!\n";
+			
+		}
+		else
+		{
+
+			player.setBlendMode(SDL_BLENDMODE_BLEND);
+
+			player.setSpawnPoint(level.getSpawnPointX(0), level.getSpawnPointY(0));
+			player.gotoSpawnPoint();
+		}
+
+		// Loads coins
+		{
+			curCoin = unsavedCoin = 0;
+			std::ifstream inp;
+			inp.open("Resources/Level_datas/level" + std::to_string(levelNum) + "_coins.txt");
+
+			inp >> nCoin;
+			coins = new Coin[nCoin];
+			for (int i = 0; i < nCoin; i++)
+			{
+
+				int x, y;
+				inp >> x >> y;
+
+				coins[i].setX(x);
+				coins[i].setY(y);
+
+				// Load a coin
+				if (!coins[i].loadFromFile("Resources/coin_sheet.png", gRenderer))
+				{
+					std::cout << "Failed to load out coin!\n";
+					
+				}
+				else
+				{
+					coins[i].setBlendMode(SDL_BLENDMODE_BLEND);
+				}
+			}
+			inp.close();
+		}
+
+		// Load dots
+		{
+			std::ifstream inp;
+			inp.open("Resources/Level_datas/level" + std::to_string(levelNum) + "_dots.txt");
+			int m;
+			inp >> m;
+			nDots = m;
+			dots = new Dot[nDots];
+			while (m--)
+			{
+
+				// Loads a dot
+				if (!dots[m].loadImage("Resources/Dot.bmp", gRenderer))
+				{
+					std::cout << "Failed to load out dot!\n";
+					
+				}
+
+				int n;
+				inp >> n;
+				for (int i = 1; i <= n; i++)
+				{
+
+					double xF, xS, yF, yS, moveTime, rad;
+					bool isCircular;
+					inp >> xS >> yS >> xF >> yF >> moveTime >> isCircular >> rad;
+					dots[m].addPath(xS, yS, xF, yF, moveTime, isCircular, rad);
+				}
+			}
+			inp.close();
+		}
 	}
 	if (resetTimer)
 	{
@@ -468,10 +399,8 @@ void run(int levelNum,int hardness, bool resetTimer, bool isSpeedrun)
 			}
 			if (event.type == SDL_MOUSEBUTTONUP && isMouseInside(x, y, gameMenu.getTextX(0), gameMenu.getTextY(0), gameMenu.getTextWidth(0), gameMenu.getTextHeight(0)))
 			{
-				gameMenu.free();
-				runMainMenu();
+				gameState = GAME_MENU;
 				quit = true;
-
 			}
 			
 		}
@@ -549,106 +478,113 @@ void run(int levelNum,int hardness, bool resetTimer, bool isSpeedrun)
 			}
 		}
 
-		for (int i = 0; i < nCoin; i++)
-			if (coins[i].getStatus() >= 1)
-			{
-				coins[i].setAlpha(std::max(0, coins[i].getAlphaValue() - 3));
-			}
+for (int i = 0; i < nCoin; i++)
+	if (coins[i].getStatus() >= 1)
+	{
+		coins[i].setAlpha(std::max(0, coins[i].getAlphaValue() - 3));
+	}
 
-		// Clear screen
-		SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
-		SDL_RenderClear(gRenderer);
+// Clear screen
+SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
+SDL_RenderClear(gRenderer);
 
-		// Render map (DO NOT PUT THIS LINE OF CODE BEHIND ANY OBJECT RENDER COMMAND, OR YOUR OBJECT WILL BE OVERLAPPED)
-		level.drawMap(gRenderer);
+// Render map (DO NOT PUT THIS LINE OF CODE BEHIND ANY OBJECT RENDER COMMAND, OR YOUR OBJECT WILL BE OVERLAPPED)
+level.drawMap(gRenderer);
 
-		// Render coin
-		for (int i = 0; i < nCoin; i++)
-			coins[i].render(gRenderer, frame / 4);
-		++frame;
-		if (frame / 4 == 22)
-			frame = 0;
+// Render coin
+for (int i = 0; i < nCoin; i++)
+	coins[i].render(gRenderer, frame / 4);
+++frame;
+if (frame / 4 == 22)
+frame = 0;
 
-		// Render dot
-		for (int i = 0; i < nDots; i++)
-			dots[i].render(currentTime/2*hardness, gRenderer);
+// Render dot
+for (int i = 0; i < nDots; i++)
+	dots[i].render(currentTime / 2 * hardness, gRenderer);
 
-		// Render player
-		player.render(player.getPlayerPosX(), player.getPlayerPosY(), gRenderer);
+// Render player
+player.render(player.getPlayerPosX(), player.getPlayerPosY(), gRenderer);
 
-		SDL_Color textColor = {255, 255, 255, 255};
-		// Render level count text texture
+SDL_Color textColor = { 255, 255, 255, 255 };
+// Render level count text texture
+{
+	if (!levelCount.loadText("LEVEL " + std::to_string(levelNum), textColor, gRenderer, gFont))
+	{
+		std::cout << "Failed to load level count text texture\n";
+	}
+	levelCount.renderText(5, 20, gRenderer);
+}
+// Render death count text texture
+{
+	if (!deathCount.loadText("DEATH: " + std::to_string(death), textColor, gRenderer, gFont))
+	{
+		std::cout << "Failed to load death count text texture\n";
+	}
+	deathCount.renderText(SCREEN_WIDTH - 5 - deathCount.getWidth(), 20, gRenderer);
+}
+// Render coin count text texture
+{
+	if (!coinCount.loadText("Coins: " + std::to_string(unsavedCoin) + "/" + std::to_string(nCoin), textColor, gRenderer, gFont))
+	{
+		std::cout << "Failed to load coin count text texture\n";
+	}
+	coinCount.renderText(SCREEN_WIDTH / 2 - coinCount.getWidth() / 2, 20, gRenderer);
+}
+// Render timer count text texture
+{
+	int hour, minute, second, t;
+	int curTime = currentTime;
+	t = curTime % 1000;
+	curTime /= 1000;
+	second = curTime % 60;
+	curTime /= 60;
+	minute = curTime % 60;
+	curTime /= 60;
+	hour = curTime;
+	t /= 10;
+	if (!timer.loadText((hour < 10 ? "0" : "") + std::to_string(hour) + ":" + (minute < 10 ? "0" : "") + std::to_string(minute) + ":" + (second < 10 ? "0" : "") + std::to_string(second) + ":" + (t < 10 ? "0" : "") + std::to_string(t), textColor, gRenderer, gFont))
+	{
+		std::cout << "Failed to load timer text texture\n";
+	}
+	timer.renderText(SCREEN_WIDTH / 2 - timer.getWidth() / 2, 655, gRenderer);
+}
+gameMenu.renderText(0 + isMouseInside(x, y, gameMenu.getTextX(0), gameMenu.getTextY(0), gameMenu.getTextWidth(0), gameMenu.getTextHeight(0)), gRenderer);
+// Update screen
+SDL_RenderPresent(gRenderer);
+if (win == true)
+{
+	resetTimer = 0;
+	if (isSpeedrun) {
+		if (levelNum < LEVEL_NUMBER)
 		{
-			if (!levelCount.loadText("LEVEL " + std::to_string(levelNum), textColor, gRenderer, gFont))
-			{
-				std::cout << "Failed to load level count text texture\n";
-			}
-			levelCount.renderText(5, 20, gRenderer);
+			levelNum++;
+			
 		}
-		// Render death count text texture
+		else
 		{
-			if (!deathCount.loadText("DEATH: " + std::to_string(death), textColor, gRenderer, gFont))
-			{
-				std::cout << "Failed to load death count text texture\n";
-			}
-			deathCount.renderText(SCREEN_WIDTH - 5 - deathCount.getWidth(), 20, gRenderer);
-		}
-		// Render coin count text texture
-		{
-			if (!coinCount.loadText("Coins: " + std::to_string(unsavedCoin) + "/" + std::to_string(nCoin), textColor, gRenderer, gFont))
-			{
-				std::cout << "Failed to load coin count text texture\n";
-			}
-			coinCount.renderText(SCREEN_WIDTH / 2 - coinCount.getWidth() / 2, 20, gRenderer);
-		}
-		// Render timer count text texture
-		{
-			int hour, minute, second, t;
-			int curTime = currentTime;
-			t = curTime % 1000;
-			curTime /= 1000;
-			second = curTime % 60;
-			curTime /= 60;
-			minute = curTime % 60;
-			curTime /= 60;
-			hour = curTime;
-			t /= 10;
-			if (!timer.loadText((hour < 10 ? "0" : "") + std::to_string(hour) + ":" + (minute < 10 ? "0" : "") + std::to_string(minute) + ":" + (second < 10 ? "0" : "") + std::to_string(second) + ":" + (t < 10 ? "0" : "") + std::to_string(t), textColor, gRenderer, gFont))
-			{
-				std::cout << "Failed to load timer text texture\n";
-			}
-			timer.renderText(SCREEN_WIDTH / 2 - timer.getWidth() / 2, 655, gRenderer);
-		}
-		gameMenu.renderText(0 + isMouseInside(x, y, gameMenu.getTextX(0), gameMenu.getTextY(0), gameMenu.getTextWidth(0), gameMenu.getTextHeight(0)), gRenderer);
-		// Update screen
-		SDL_RenderPresent(gRenderer);
-		if (win == true)
-		{
-			if (isSpeedrun) {
-				if (levelNum < LEVEL_NUMBER)
-				{
-					closeMedia();
-					run(levelNum + 1, hardness, 0,isSpeedrun);
-				}
-				else
-				{
-					closeMedia();
-					std::cerr << "RUNNING\n";
-					runvictoryMenu(1);
-					std::cerr << "SUCCESSFUL\n";
-				}
-			}
-			else
-			{
-				closeMedia();
-				std::cerr << "RUNNING\n";
-				runvictoryMenu(0);
-				std::cerr << "SUCCESSFUL\n";
-			}
-			break;
+			gameState = GAME_WIN;
 		}
 	}
-	closeMedia();
+	else
+	{
+		gameState = GAME_WIN;
+	}
+	break;
+}
+	}
+		// Close level
+		level.free();
+
+		// Close player entity
+		player.free();
+
+		// Close dots
+		dots = NULL;
+		nDots = 0;
+
+		// Close and reset coin parameters
+		coins = NULL;
+		nCoin = curCoin = unsavedCoin = 0;
 	gameMenu.free();
 }
 void runMainMenu()
@@ -679,31 +615,29 @@ void runMainMenu()
 			// User requests quit
 			if (event.type == SDL_QUIT)
 			{
-				quit = true;
 				exit(0);
 			}
 
 			// Handle input for the main menu
 			if (event.type == SDL_MOUSEBUTTONUP && isMouseInside(x, y, mainMenu.getTextureX(1), mainMenu.getTextureY(1), mainMenu.getTextureWidth(1), mainMenu.getTextureHeight(1)))
 			{
-				mainMenu.free();
 				Mix_PlayChannel(-1, gBell, 0);
-				runModeSelection();
+				gameState = GAME_MODESELECT;
 				quit = 1;
 			}
 			else 
 			if (event.type == SDL_MOUSEBUTTONUP && isMouseInside(x, y, mainMenu.getTextureX(5), mainMenu.getTextureY(5), mainMenu.getTextureWidth(5), mainMenu.getTextureHeight(5)))
 			{
 				Mix_PlayChannel(-1, gBell, 0);
-				quit = 1;
+				exit(0);
 			}
 			else
 			if (event.type == SDL_MOUSEBUTTONUP && isMouseInside(x, y, mainMenu.getTextureX(3), mainMenu.getTextureY(3), mainMenu.getTextureWidth(5), mainMenu.getTextureHeight(3)))
 			{
 				Mix_PlayChannel(-1, gBell, 0);
-				std::cerr << "HAS STARTED TO RUN\n";
-				runTutorialMenu();
-				std::cerr << "RUN SUCCESSFULLY\n";
+				gameState = GAME_TUTORIAL;
+				quit = 1;
+				
 			}
 
 		}
@@ -751,7 +685,9 @@ void runTutorialMenu()
 			// Handle input for the main menu
 			if (event.type == SDL_MOUSEBUTTONUP && isMouseInside(x, y, tutorialMenu.getTextX(0), tutorialMenu.getTextY(0), tutorialMenu.getTextWidth(0), tutorialMenu.getTextHeight(0)))
 			{
+				Mix_PlayChannel(-1, gBell, 0);
 				quit = true;
+				gameState = GAME_MENU;
 			}
 
 		}
@@ -797,17 +733,18 @@ void runModeSelection()
 			// Handle input for the main menu
 			if (event.type == SDL_MOUSEBUTTONUP && isMouseInside(x, y, modeMenu.getTextureX(1), modeMenu.getTextureY(1), modeMenu.getTextureWidth(1), modeMenu.getTextureHeight(1)))
 			{
-				modeMenu.free();
 				Mix_PlayChannel(-1, gBell, 0);
-				runHardnessSelection();
+				gameState = GAME_HARDNESS;
+				levelNum = 1;
+				isSpeedrun = 1;
 				quit = 1;
 			}
 			else
 				if (event.type == SDL_MOUSEBUTTONUP && isMouseInside(x, y, modeMenu.getTextureX(3), modeMenu.getTextureY(3), modeMenu.getTextureWidth(3), modeMenu.getTextureHeight(3)))
 				{
-					modeMenu.free();
 					Mix_PlayChannel(-1, gBell, 0);
-					runLevelSelection();
+					isSpeedrun = 0;
+					gameState = GAME_LEVELSELECT;
 					quit = 1;
 					
 				}
@@ -826,7 +763,7 @@ void runModeSelection()
 	}
 	modeMenu.free();
 }
-void runHardnessSelection(bool isSpeedrun, int level)
+void runHardnessSelection()
 {
 	//Hardness select menu interface
 	UI hardnessMenu(5, 0);
@@ -857,17 +794,21 @@ void runHardnessSelection(bool isSpeedrun, int level)
 			// Handle input for the main menu
 			if (event.type == SDL_MOUSEBUTTONUP && isMouseInside(x, y, hardnessMenu.getTextureX(1), hardnessMenu.getTextureY(1), hardnessMenu.getTextureWidth(1), hardnessMenu.getTextureHeight(1)))
 			{
-				hardnessMenu.free();
+				
 				Mix_PlayChannel(-1, gBell, 0);
-				run(level,1,1,isSpeedrun);
+				hardness = 1;
+				resetTimer = 1;
+				gameState = GAME_MAIN;
 				quit = 1;
 			}
 			else
 				if (event.type == SDL_MOUSEBUTTONUP && isMouseInside(x, y, hardnessMenu.getTextureX(3), hardnessMenu.getTextureY(3), hardnessMenu.getTextureWidth(3), hardnessMenu.getTextureHeight(3)))
 				{
-					hardnessMenu.free();
+					
 					Mix_PlayChannel(-1, gBell, 0);
-					run(level,2,1, isSpeedrun);
+					hardness = 2;
+					resetTimer = 1;
+					gameState = GAME_MAIN;
 					quit = 1;
 
 				}
@@ -886,7 +827,7 @@ void runHardnessSelection(bool isSpeedrun, int level)
 	}
 	hardnessMenu.free();
 }
-void runvictoryMenu(bool isSpeedrun)
+void runvictoryMenu()
 {
 	//Victory menu interface
 	UI victoryMenu(2, 4);
@@ -937,8 +878,9 @@ void runvictoryMenu(bool isSpeedrun)
 			// Handle input for the main menu
 			if (event.type == SDL_MOUSEBUTTONUP && isMouseInside(x, y, victoryMenu.getTextX(0), victoryMenu.getTextY(0), victoryMenu.getTextWidth(0), victoryMenu.getTextHeight(0)))
 			{
-				victoryMenu.free();
-				runMainMenu();
+				
+				Mix_PlayChannel(-1, gBell, 0);
+				gameState = GAME_MENU;
 				quit = true;
 				
 			}
@@ -997,8 +939,9 @@ void runLevelSelection()
 			{
 				if (event.type == SDL_MOUSEBUTTONUP && isMouseInside(x, y, levelMenu.getTextureX(i), levelMenu.getTextureY(i), levelMenu.getTextureWidth(i), levelMenu.getTextureHeight(i)))
 				{
-					levelMenu.free();
-					runHardnessSelection(0, i);
+					Mix_PlayChannel(-1, gBell, 0);
+					gameState = GAME_HARDNESS;
+					levelNum = i;
 					quit = true;
 
 				}
@@ -1021,13 +964,45 @@ void runLevelSelection()
 }
 int main(int argc, char **argv)
 {
+	//Initialize the game
 	if (!init())
 	{
 		std::cout << "Failed to initialize!\n";
 		return -1;
 	}
+
+	//Play the main music
 	Mix_PlayMusic(gMusic, 1000);
-	runMainMenu();
+
+	// The game management starts here
+	while (1)
+	{
+		std::cerr << gameState << " " << levelNum << " " << hardness << " " << resetTimer << " " << isSpeedrun << "\n";
+		switch (gameState)
+		{
+		case GAME_MENU: // Player chooses to go to main menu
+			runMainMenu();
+			break;
+		case GAME_TUTORIAL: // Player chooses to go to read tutorial
+			runTutorialMenu(); 
+			break;
+		case GAME_MODESELECT: // Player chooses to go to mode selection
+			runModeSelection();
+			break;
+		case GAME_HARDNESS: // Player chooses to go to hardness selection
+			runHardnessSelection(); 
+			break;
+		case GAME_LEVELSELECT: // Player chooses to go to level selection
+			runLevelSelection();
+			break;
+		case GAME_MAIN: // Player chooses to play the game
+			run();
+			break;
+		case GAME_WIN: // Player wons the level (in level select mode) or the whole 15 levels (in speedrun mode)
+			runvictoryMenu();
+			break;
+		}
+	}
 	// Free resources
 	closeGame();
 	return 0;
