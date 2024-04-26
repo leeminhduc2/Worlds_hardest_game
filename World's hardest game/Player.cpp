@@ -281,8 +281,8 @@ bool Player::checkCollision(int currentTime, Dot dot)
 		{
 			if (dot.getIsCircular(i))
 			{
-				dX = dot.getXS(i) + (dot.getRad(i) * cos(dot.getXF(i) + (dot.getYF(i) - dot.getXF(i)) * (double(currentTime)) / dot.getMoveTime(i) / 180 * M_PI));
-				dY = dot.getYS(i) + (dot.getRad(i) * cos(dot.getXF(i) + (dot.getYF(i) - dot.getXF(i)) * (double(currentTime)) / dot.getMoveTime(i) / 180 * M_PI));
+				dX = dot.getXS(i) + (dot.getRad(i) * cos((dot.getXF(i) + (dot.getYF(i) - dot.getXF(i)) * (double(currentTime)) / dot.getMoveTime(i) )/ 180 * M_PI));
+				dY = dot.getYS(i) + (dot.getRad(i) * sin((dot.getXF(i) + (dot.getYF(i) - dot.getXF(i)) * (double(currentTime)) / dot.getMoveTime(i)) / 180 * M_PI));
 			}
 			else
 			{

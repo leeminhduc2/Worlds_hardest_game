@@ -23,7 +23,7 @@ SDL_Window *gWindow = NULL;
 SDL_Renderer *gRenderer = NULL;
 
 // The number of level
-const int LEVEL_NUMBER = 13;
+const int LEVEL_NUMBER = 15;
 
 // Globally used font
 TTF_Font *gFont = NULL;
@@ -77,6 +77,7 @@ Mix_Music *gMusic = NULL;
 Mix_Chunk *gBell = NULL;
 Mix_Chunk *gSmack = NULL;
 Mix_Chunk *gDing = NULL;
+Mix_Chunk *gSuccess = NULL;
 
 //Start time for timer
 int startTime = 0;
@@ -119,7 +120,7 @@ bool handleCheatCode(SDL_Event& e)
 		if (e.key.keysym.sym == SDLK_p && isP)
 			isP = 0;
 	}
-
+	// Handle if the cheat code is activated
 	if (isS && isK && isI && isP && !isNR)
 	{
 		isNR = 1;
@@ -183,7 +184,7 @@ bool init()
 					std::cout << "SDL_image couldn't initialize with exitocde\n";
 					success = false;
 				}
-				Mix_Init(MIX_INIT_OGG);
+				Mix_Init(MIX_INIT_OGG|MIX_INIT_MP3);
 				if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0)
 					{
 						printf("SDL_mixer could not initialize! SDL_mixer Error: %s\n", Mix_GetError());
@@ -216,6 +217,7 @@ bool init()
 	gBell = Mix_LoadWAV("Resources/Soundtracks/bell.wav");
 	gDing = Mix_LoadWAV("Resources/Soundtracks/ding.wav");
 	gSmack = Mix_LoadWAV("Resources/Soundtracks/smack.wav");
+	gSuccess = Mix_LoadWAV("Resources/Soundtracks/success.wav");
 	return success;
 }
 void closeGame()
@@ -242,6 +244,8 @@ void closeGame()
 }
 void run()
 {
+	///Load local variables
+	//Game menu UI 
 	UI gameMenu(0, 2);
 	SDL_Color textColor = { 255, 255, 255, 255 };
 	SDL_Color textColorC = { 237,28,36,255 };
@@ -250,7 +254,7 @@ void run()
 	gameMenu.loadText("BACK TO MAIN MENU", textColorC, gRenderer, gFont, 1);
 	gameMenu.setTextCoor(SCREEN_WIDTH - 5 - gameMenu.getTextWidth(1), 655, 1);
 	
-
+	
 	// Player
 	Player player;
 
@@ -274,91 +278,91 @@ void run()
 
 	// Level count texture
 	HUD_Text levelCount ;
+	
+	// Loading success flag
+	bool success = 1;
+
+	// Load level
+	level.readLevelData("Resources/Level_datas/level" + std::to_string(levelNum) + ".txt");
+
+	// Loads player
+	if (!player.loadFile("Resources/Player.bmp", gRenderer))
 	{
-		// Loading success flag
-		bool success = 1;
-
-		// Load level
-		level.readLevelData("Resources/Level_datas/level" + std::to_string(levelNum) + ".txt");
-
-		// Loads player
-		if (!player.loadFile("Resources/Player.bmp", gRenderer))
-		{
-			std::cout << "Failed to load out player!\n";
+		std::cout << "Failed to load out player!\n";
 			
-		}
-		else
-		{
-
-			player.setBlendMode(SDL_BLENDMODE_BLEND);
-
-			player.setSpawnPoint(level.getSpawnPointX(0), level.getSpawnPointY(0));
-			player.gotoSpawnPoint();
-		}
-
-		// Loads coins
-		{
-			curCoin = unsavedCoin = 0;
-			std::ifstream inp;
-			inp.open("Resources/Level_datas/level" + std::to_string(levelNum) + "_coins.txt");
-
-			inp >> nCoin;
-			coins = new Coin[nCoin];
-			for (int i = 0; i < nCoin; i++)
-			{
-
-				int x, y;
-				inp >> x >> y;
-
-				coins[i].setX(x);
-				coins[i].setY(y);
-
-				// Load a coin
-				if (!coins[i].loadFromFile("Resources/coin_sheet.png", gRenderer))
-				{
-					std::cout << "Failed to load out coin!\n";
-					
-				}
-				else
-				{
-					coins[i].setBlendMode(SDL_BLENDMODE_BLEND);
-				}
-			}
-			inp.close();
-		}
-
-		// Load dots
-		{
-			std::ifstream inp;
-			inp.open("Resources/Level_datas/level" + std::to_string(levelNum) + "_dots.txt");
-			int m;
-			inp >> m;
-			nDots = m;
-			dots = new Dot[nDots];
-			while (m--)
-			{
-
-				// Loads a dot
-				if (!dots[m].loadImage("Resources/Dot.bmp", gRenderer))
-				{
-					std::cout << "Failed to load out dot!\n";
-					
-				}
-
-				int n;
-				inp >> n;
-				for (int i = 1; i <= n; i++)
-				{
-
-					double xF, xS, yF, yS, moveTime, rad;
-					bool isCircular;
-					inp >> xS >> yS >> xF >> yF >> moveTime >> isCircular >> rad;
-					dots[m].addPath(xS, yS, xF, yF, moveTime, isCircular, rad);
-				}
-			}
-			inp.close();
-		}
 	}
+	else
+	{
+
+		player.setBlendMode(SDL_BLENDMODE_BLEND);
+
+		player.setSpawnPoint(level.getSpawnPointX(0), level.getSpawnPointY(0));
+		player.gotoSpawnPoint();
+	}
+
+	// Loads coins
+	{
+		curCoin = unsavedCoin = 0;
+		std::ifstream inp;
+		inp.open("Resources/Level_datas/level" + std::to_string(levelNum) + "_coins.txt");
+
+		inp >> nCoin;
+		coins = new Coin[nCoin];
+		for (int i = 0; i < nCoin; i++)
+		{
+
+			int x, y;
+			inp >> x >> y;
+
+			coins[i].setX(x);
+			coins[i].setY(y);
+
+			// Load a coin
+			if (!coins[i].loadFromFile("Resources/coin_sheet.png", gRenderer))
+			{
+				std::cout << "Failed to load out coin!\n";
+					
+			}
+			else
+			{
+				coins[i].setBlendMode(SDL_BLENDMODE_BLEND);
+			}
+		}
+		inp.close();
+	}
+
+	// Load dots
+	{
+		std::ifstream inp;
+		inp.open("Resources/Level_datas/level" + std::to_string(levelNum) + "_dots.txt");
+		int m;
+		inp >> m;
+		nDots = m;
+		dots = new Dot[nDots];
+		while (m--)
+		{
+
+			// Loads a dot
+			if (!dots[m].loadImage("Resources/Dot.bmp", gRenderer))
+			{
+				std::cout << "Failed to load out dot!\n";
+					
+			}
+
+			int n;
+			inp >> n;
+			for (int i = 1; i <= n; i++)
+			{
+
+				double xF, xS, yF, yS, moveTime, rad;
+				bool isCircular;
+				inp >> xS >> yS >> xF >> yF >> moveTime >> isCircular >> rad;
+				dots[m].addPath(xS, yS, xF, yF, moveTime, isCircular, rad);
+			}
+		}
+		inp.close();
+	}
+	//To reset timer when you start to play a particular mode
 	if (resetTimer)
 	{
 		startTime = SDL_GetTicks();
@@ -392,23 +396,27 @@ void run()
 
 			// Handle input for the dot
 			player.handleEvent(event);
+			//If user enables the secret cheat code
 			if (handleCheatCode(event))
 			{
 				win = 1;
-				Mix_PlayChannel(-1, gBell, 0);
+				
 			}
+			//If user requests to quit to main menu 
 			if (event.type == SDL_MOUSEBUTTONUP && isMouseInside(x, y, gameMenu.getTextX(0), gameMenu.getTextY(0), gameMenu.getTextWidth(0), gameMenu.getTextHeight(0)))
 			{
 				gameState = GAME_MENU;
+				Mix_PlayChannel(-1, gBell, 0);
 				quit = true;
 			}
 			
 		}
 
+		///Handle game's mechanism
 		int currentTime = SDL_GetTicks()-startTime;
 		if (player.getPlayerStatus())
 		{
-
+			//Check if player touches any blue dots
 			for (int j = 0; j < nDots; j++)
 			{
 				if (player.checkCollision(currentTime/2*hardness, dots[j]))
@@ -454,13 +462,14 @@ void run()
 					{
 						if (curCoin == nCoin) {
 							win = 1;
-							Mix_PlayChannel(-1, gBell, 0);
+							
 						}
 					}
 				}
 		}
 		else
 		{
+			//Check if the player touches any coins
 			player.setAlpha(std::max(0, player.getAlphaValue() - 3));
 			if (player.getAlphaValue() == 0)
 			{
@@ -478,113 +487,128 @@ void run()
 			}
 		}
 
-for (int i = 0; i < nCoin; i++)
-	if (coins[i].getStatus() >= 1)
-	{
-		coins[i].setAlpha(std::max(0, coins[i].getAlphaValue() - 3));
-	}
+		//Change coin animation 
+		for (int i = 0; i < nCoin; i++)
+			if (coins[i].getStatus() >= 1)
+			{
+				//Create fade effect
+				coins[i].setAlpha(std::max(0, coins[i].getAlphaValue() - 3));
+			}
 
-// Clear screen
-SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
-SDL_RenderClear(gRenderer);
+		// Clear screen
+		SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
+		SDL_RenderClear(gRenderer);
 
-// Render map (DO NOT PUT THIS LINE OF CODE BEHIND ANY OBJECT RENDER COMMAND, OR YOUR OBJECT WILL BE OVERLAPPED)
-level.drawMap(gRenderer);
+		// Render map (DO NOT PUT THIS LINE OF CODE BEHIND ANY OBJECT RENDER COMMAND, OR YOUR OBJECT WILL BE OVERLAPPED)
+		level.drawMap(gRenderer);
 
-// Render coin
-for (int i = 0; i < nCoin; i++)
-	coins[i].render(gRenderer, frame / 4);
-++frame;
-if (frame / 4 == 22)
-frame = 0;
 
-// Render dot
-for (int i = 0; i < nDots; i++)
-	dots[i].render(currentTime / 2 * hardness, gRenderer);
 
-// Render player
-player.render(player.getPlayerPosX(), player.getPlayerPosY(), gRenderer);
+		// Render coin
+		for (int i = 0; i < nCoin; i++)
+			coins[i].render(gRenderer, frame / 4);
+		++frame;
+		if (frame / 4 == 22)
+		frame = 0;
 
-SDL_Color textColor = { 255, 255, 255, 255 };
-// Render level count text texture
-{
-	if (!levelCount.loadText("LEVEL " + std::to_string(levelNum), textColor, gRenderer, gFont))
-	{
-		std::cout << "Failed to load level count text texture\n";
-	}
-	levelCount.renderText(5, 20, gRenderer);
-}
-// Render death count text texture
-{
-	if (!deathCount.loadText("DEATH: " + std::to_string(death), textColor, gRenderer, gFont))
-	{
-		std::cout << "Failed to load death count text texture\n";
-	}
-	deathCount.renderText(SCREEN_WIDTH - 5 - deathCount.getWidth(), 20, gRenderer);
-}
-// Render coin count text texture
-{
-	if (!coinCount.loadText("Coins: " + std::to_string(unsavedCoin) + "/" + std::to_string(nCoin), textColor, gRenderer, gFont))
-	{
-		std::cout << "Failed to load coin count text texture\n";
-	}
-	coinCount.renderText(SCREEN_WIDTH / 2 - coinCount.getWidth() / 2, 20, gRenderer);
-}
-// Render timer count text texture
-{
-	int hour, minute, second, t;
-	int curTime = currentTime;
-	t = curTime % 1000;
-	curTime /= 1000;
-	second = curTime % 60;
-	curTime /= 60;
-	minute = curTime % 60;
-	curTime /= 60;
-	hour = curTime;
-	t /= 10;
-	if (!timer.loadText((hour < 10 ? "0" : "") + std::to_string(hour) + ":" + (minute < 10 ? "0" : "") + std::to_string(minute) + ":" + (second < 10 ? "0" : "") + std::to_string(second) + ":" + (t < 10 ? "0" : "") + std::to_string(t), textColor, gRenderer, gFont))
-	{
-		std::cout << "Failed to load timer text texture\n";
-	}
-	timer.renderText(SCREEN_WIDTH / 2 - timer.getWidth() / 2, 655, gRenderer);
-}
-gameMenu.renderText(0 + isMouseInside(x, y, gameMenu.getTextX(0), gameMenu.getTextY(0), gameMenu.getTextWidth(0), gameMenu.getTextHeight(0)), gRenderer);
-// Update screen
-SDL_RenderPresent(gRenderer);
-if (win == true)
-{
-	resetTimer = 0;
-	if (isSpeedrun) {
-		if (levelNum < LEVEL_NUMBER)
+		// Render dot
+		for (int i = 0; i < nDots; i++)
+			dots[i].render(currentTime / 2 * hardness, gRenderer);
+
+		// Render player
+		player.render(player.getPlayerPosX(), player.getPlayerPosY(), gRenderer);
+
+		//Render the "black" background
 		{
-			levelNum++;
-			
+			SDL_Rect fillRect = { 0, 0, SCREEN_WIDTH, 75 };
+			SDL_RenderFillRect(gRenderer, &fillRect);
+			fillRect.x = SCREEN_HEIGHT - 75;
+			SDL_RenderFillRect(gRenderer, &fillRect);
 		}
-		else
+		// Render level count text texture
+		SDL_Color textColor = { 255, 255, 255, 255 };
+
 		{
-			gameState = GAME_WIN;
+			if (!levelCount.loadText("LEVEL " + std::to_string(levelNum), textColor, gRenderer, gFont))
+			{
+				std::cout << "Failed to load level count text texture\n";
+			}
+			levelCount.renderText(5, 20, gRenderer);
 		}
+		// Render death count text texture
+		{
+			if (!deathCount.loadText("DEATH: " + std::to_string(death), textColor, gRenderer, gFont))
+			{
+				std::cout << "Failed to load death count text texture\n";
+			}
+			deathCount.renderText(SCREEN_WIDTH - 5 - deathCount.getWidth(), 20, gRenderer);
+		}
+		// Render coin count text texture
+		{
+			if (!coinCount.loadText("Coins: " + std::to_string(unsavedCoin) + "/" + std::to_string(nCoin), textColor, gRenderer, gFont))
+			{
+				std::cout << "Failed to load coin count text texture\n";
+			}
+			coinCount.renderText(SCREEN_WIDTH / 2 - coinCount.getWidth() / 2, 20, gRenderer);
+		}
+		// Render timer count text texture
+		{
+			int hour, minute, second, t;
+			int curTime = currentTime;
+			t = curTime % 1000;
+			curTime /= 1000;
+			second = curTime % 60;
+			curTime /= 60;
+			minute = curTime % 60;
+			curTime /= 60;
+			hour = curTime;
+			t /= 10;
+			if (!timer.loadText((hour < 10 ? "0" : "") + std::to_string(hour) + ":" + (minute < 10 ? "0" : "") + std::to_string(minute) + ":" + (second < 10 ? "0" : "") + std::to_string(second) + ":" + (t < 10 ? "0" : "") + std::to_string(t), textColor, gRenderer, gFont))
+			{
+				std::cout << "Failed to load timer text texture\n";
+			}
+			timer.renderText(SCREEN_WIDTH / 2 - timer.getWidth() / 2, 655, gRenderer);
+		}
+		gameMenu.renderText(0 + isMouseInside(x, y, gameMenu.getTextX(0), gameMenu.getTextY(0), gameMenu.getTextWidth(0), gameMenu.getTextHeight(0)), gRenderer);
+		// Update screen
+		SDL_RenderPresent(gRenderer);
+		//Handle the "win" event"
+		if (win == true)
+		{
+			resetTimer = 0;
+			if (isSpeedrun) {
+				if (levelNum < LEVEL_NUMBER)
+				{
+					levelNum++;
+					Mix_PlayChannel(-1, gBell, 0);
+				}
+				else
+				{
+					Mix_PlayChannel(-1, gSuccess, 0);
+					gameState = GAME_WIN;
+				}
+			}
+			else
+			{
+				Mix_PlayChannel(-1, gSuccess, 0);
+				gameState = GAME_WIN;
+			}
+			break;
 	}
-	else
-	{
-		gameState = GAME_WIN;
-	}
-	break;
-}
-	}
-		// Close level
-		level.free();
+		}
+	// Close level
+	level.free();
 
-		// Close player entity
-		player.free();
+	// Close player entity
+	player.free();
 
-		// Close dots
-		dots = NULL;
-		nDots = 0;
+	// Close dots
+	dots = NULL;
+	nDots = 0;
 
-		// Close and reset coin parameters
-		coins = NULL;
-		nCoin = curCoin = unsavedCoin = 0;
+	// Close and reset coin parameters
+	coins = NULL;
+	nCoin = curCoin = unsavedCoin = 0;
 	gameMenu.free();
 }
 void runMainMenu()
@@ -642,6 +666,7 @@ void runMainMenu()
 
 		}
 		if (quit == 1) break;
+		SDL_RenderClear(gRenderer);
 		//Render main manu
 
 		mainMenu.renderTexture(0, gRenderer);
@@ -692,6 +717,7 @@ void runTutorialMenu()
 
 		}
 		if (quit == 1) break;
+		SDL_RenderClear(gRenderer);
 		//Render tutorial menu manu
 		tutorialMenu.renderTexture(0, gRenderer);
 		tutorialMenu.renderText(0 + isMouseInside(x, y, tutorialMenu.getTextX(0), tutorialMenu.getTextY(0), tutorialMenu.getTextWidth(0), tutorialMenu.getTextHeight(0)),gRenderer);
@@ -705,7 +731,14 @@ void runTutorialMenu()
 void runModeSelection()
 {
 	//Mode select menu interface
-	UI modeMenu(5, 0);
+	UI modeMenu(5, 2);
+	SDL_Color textColor = { 0, 0, 0, 255 };
+	SDL_Color textColorC = { 237,28,36,255 };
+
+	modeMenu.loadText("BACK TO PREVIOUS", textColor, gRenderer, gFont, 0);
+	modeMenu.setTextCoor(SCREEN_WIDTH - modeMenu.getTextWidth(0) - 10, SCREEN_HEIGHT - modeMenu.getTextHeight(0) - 10, 0);
+	modeMenu.loadText("BACK TO PREVIOUS", textColorC, gRenderer, gFont, 1);
+	modeMenu.setTextCoor(SCREEN_WIDTH - modeMenu.getTextWidth(1) - 10, SCREEN_HEIGHT - modeMenu.getTextHeight(1) - 10, 1);
 	modeMenu.loadTexture("Resources/mode_select_menu.png", gRenderer, 0);
 	modeMenu.loadTexture("Resources/button_speedrun.png", gRenderer, 1);
 	modeMenu.setTextureCoor(SCREEN_WIDTH / 2 - modeMenu.getTextureWidth(1) / 2, 200, 1);
@@ -748,16 +781,26 @@ void runModeSelection()
 					quit = 1;
 					
 				}
+				else
+					if (event.type == SDL_MOUSEBUTTONUP && isMouseInside(x, y, modeMenu.getTextX(0), modeMenu.getTextY(0), modeMenu.getTextWidth(0), modeMenu.getTextHeight(0)))
+					{
+						Mix_PlayChannel(-1, gBell, 0);
+						
+						gameState = GAME_MENU;
+						quit = 1;
+
+					}
 
 
 		}
 		if (quit == 1) break;
+		SDL_RenderClear(gRenderer);
 		//Render main manu
 
 		modeMenu.renderTexture(0, gRenderer);
 		modeMenu.renderTexture(1 + isMouseInside(x, y, modeMenu.getTextureX(1), modeMenu.getTextureY(1), modeMenu.getTextureWidth(1), modeMenu.getTextureHeight(1)), gRenderer);
 		modeMenu.renderTexture(3 + isMouseInside(x, y, modeMenu.getTextureX(3), modeMenu.getTextureY(3), modeMenu.getTextureWidth(3), modeMenu.getTextureHeight(3)), gRenderer);
-		
+		modeMenu.renderText(0 + isMouseInside(x, y, modeMenu.getTextX(0), modeMenu.getTextY(0), modeMenu.getTextWidth(0), modeMenu.getTextHeight(0)), gRenderer);
 		//Present the screen to window
 		SDL_RenderPresent(gRenderer);
 	}
@@ -766,7 +809,14 @@ void runModeSelection()
 void runHardnessSelection()
 {
 	//Hardness select menu interface
-	UI hardnessMenu(5, 0);
+	UI hardnessMenu(5, 2);
+	SDL_Color textColor = { 0, 0, 0, 255 };
+	SDL_Color textColorC = { 237,28,36,255 };
+
+	hardnessMenu.loadText("BACK TO PREVIOUS", textColor, gRenderer, gFont, 0);
+	hardnessMenu.setTextCoor(SCREEN_WIDTH - hardnessMenu.getTextWidth(0) - 10, SCREEN_HEIGHT - hardnessMenu.getTextHeight(0) - 10, 0);
+	hardnessMenu.loadText("BACK TO PREVIOUS", textColorC, gRenderer, gFont, 1);
+	hardnessMenu.setTextCoor(SCREEN_WIDTH - hardnessMenu.getTextWidth(1) - 10, SCREEN_HEIGHT - hardnessMenu.getTextHeight(1) - 10, 1);
 	hardnessMenu.loadTexture("Resources/hardness_menu.png", gRenderer, 0);
 	hardnessMenu.loadTexture("Resources/button_easy.png", gRenderer, 1);
 	hardnessMenu.setTextureCoor(SCREEN_WIDTH / 2 - hardnessMenu.getTextureWidth(1) / 2, 200, 1);
@@ -812,16 +862,29 @@ void runHardnessSelection()
 					quit = 1;
 
 				}
+				else
+					if (event.type == SDL_MOUSEBUTTONUP && isMouseInside(x, y, hardnessMenu.getTextX(0), hardnessMenu.getTextY(0), hardnessMenu.getTextWidth(0), hardnessMenu.getTextHeight(0)))
+					{
+
+						Mix_PlayChannel(-1, gBell, 0);
+						if (isSpeedrun)
+							gameState = GAME_MODESELECT;
+						else
+							gameState = GAME_LEVELSELECT;
+						quit = 1;
+
+					}
 
 
 		}
 		if (quit == 1) break;
+		SDL_RenderClear(gRenderer);
 		//Render main manu
 
 		hardnessMenu.renderTexture(0, gRenderer);
 		hardnessMenu.renderTexture(1 + isMouseInside(x, y, hardnessMenu.getTextureX(1), hardnessMenu.getTextureY(1), hardnessMenu.getTextureWidth(1), hardnessMenu.getTextureHeight(1)), gRenderer);
 		hardnessMenu.renderTexture(3 + isMouseInside(x, y, hardnessMenu.getTextureX(3), hardnessMenu.getTextureY(3), hardnessMenu.getTextureWidth(3), hardnessMenu.getTextureHeight(3)), gRenderer);
-
+		hardnessMenu.renderText(0 + isMouseInside(x, y, hardnessMenu.getTextX(0), hardnessMenu.getTextY(0), hardnessMenu.getTextWidth(0), hardnessMenu.getTextHeight(0)), gRenderer);
 		//Present the screen to window
 		SDL_RenderPresent(gRenderer);
 	}
@@ -887,6 +950,7 @@ void runvictoryMenu()
 
 		}
 		if (quit == 1) break;
+		SDL_RenderClear(gRenderer);
 		//Render tutorial menu manu
 		victoryMenu.renderTexture(0 + isSpeedrun, gRenderer);
 		victoryMenu.renderText(0 + isMouseInside(x, y, victoryMenu.getTextX(0), victoryMenu.getTextY(0), victoryMenu.getTextWidth(0), victoryMenu.getTextHeight(0)), gRenderer);
@@ -901,7 +965,7 @@ void runvictoryMenu()
 void runLevelSelection()
 {
 	//Level select menu
-	UI levelMenu(16, 30);
+	UI levelMenu(16, 32);
 	SDL_Color textColor = { 0, 0, 0, 255 };
 	SDL_Color textColorC = { 237,28,36,255 };
 	levelMenu.loadTexture("Resources/screen.png", gRenderer, 0);
@@ -917,6 +981,10 @@ void runLevelSelection()
 		levelMenu.setTextCoor(90 + ((i / 2) % 5) * 150 + 50 - levelMenu.getTextWidth(i)/2, 155 + ((i / 2) / 5) * 150 + 50 - levelMenu.getTextHeight(i)/2, i);
 		levelMenu.setTextCoor(90 + ((i / 2) % 5) * 150 + 50 - levelMenu.getTextWidth(i+1) / 2, 155 + ((i / 2) / 5) * 150 + 50 - levelMenu.getTextHeight(i+1) / 2, i+1);
 	}
+	levelMenu.loadText("BACK TO PREVIOUS", textColor, gRenderer, gFont, 30);
+	levelMenu.setTextCoor(SCREEN_WIDTH - levelMenu.getTextWidth(30) - 10, SCREEN_HEIGHT - levelMenu.getTextHeight(30) - 10, 30);
+	levelMenu.loadText("BACK TO PREVIOUS", textColorC, gRenderer, gFont, 31);
+	levelMenu.setTextCoor(SCREEN_WIDTH - levelMenu.getTextWidth(31) - 10, SCREEN_HEIGHT - levelMenu.getTextHeight(31) - 10, 31);
 	bool quit = 0;
 	SDL_Event event;
 	
@@ -946,9 +1014,17 @@ void runLevelSelection()
 
 				}
 			}
+			if (event.type == SDL_MOUSEBUTTONUP && isMouseInside(x, y, levelMenu.getTextX(30), levelMenu.getTextY(30), levelMenu.getTextWidth(30), levelMenu.getTextHeight(30)))
+			{
+				Mix_PlayChannel(-1, gBell, 0);
+				gameState = GAME_MODESELECT;
+				quit = true;
+
+			}
 
 		}
 		if (quit == 1) break;
+		SDL_RenderClear(gRenderer);
 		//Render tutorial menu manu
 		for (int i = 0; i < 16; i++)
 			levelMenu.renderTexture(i, gRenderer);
@@ -956,6 +1032,7 @@ void runLevelSelection()
 		{
 			levelMenu.renderText(i + isMouseInside(x, y, levelMenu.getTextureX(i/2+1), levelMenu.getTextureY(i/2+1), levelMenu.getTextureWidth(i/2+1), levelMenu.getTextureHeight(i/2+1)), gRenderer);
 		}
+		levelMenu.renderText(30 + isMouseInside(x, y, levelMenu.getTextX(30), levelMenu.getTextY(30), levelMenu.getTextWidth(30), levelMenu.getTextHeight(30)),gRenderer);
 		//Present the screen to window
 		SDL_RenderPresent(gRenderer);
 
@@ -970,10 +1047,23 @@ int main(int argc, char **argv)
 		std::cout << "Failed to initialize!\n";
 		return -1;
 	}
-
 	//Play the main music
 	Mix_PlayMusic(gMusic, 1000);
-
+	//Run the game intro
+	UI introMenu(100, 0);
+	{
+		int i = 1;
+		while (i <= 100)
+		{
+			SDL_RenderClear(gRenderer);
+			introMenu.loadTexture("Resources/game_intro/ezgif-frame-" + std::to_string(i / 100) + std::to_string((i % 100) / 10) + std::to_string(i % 10) + ".jpg", gRenderer, i - 1);
+			SDL_Delay((50 - SDL_GetTicks()%50) % 50);
+			introMenu.renderTexture(i - 1, gRenderer);
+			SDL_RenderPresent(gRenderer);
+			++i;
+			
+		}
+	}
 	// The game management starts here
 	while (1)
 	{
