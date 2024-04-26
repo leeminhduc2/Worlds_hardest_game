@@ -18,7 +18,7 @@
 # 0. Cách tải game
 ## 0.1 Không bao gồm code
 
-Tải game (được nén thành file zip) tại [đây](https://github.com/leeminhduc2/Worlds_hardest_game/releases/tag/release) : </br>
+Tải game (được nén thành file zip) tại [đây](https://github.com/leeminhduc2/Worlds_hardest_game/releases/tag/official) : </br>
 Giải nén game vào một thư mục, khởi động file **World's hardest game.exe** rồi tận hưởng game thôi nào !!!
 
 ## 0.2 Bao gồm code và có thể biên dịch
