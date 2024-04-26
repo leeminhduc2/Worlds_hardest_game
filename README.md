@@ -1,9 +1,20 @@
 # World's hardest game
 - Game demo : 
-- Game walkthrough (easy mode):
 # Giới thiệu chung
 **World's hardest game - Trò chơi khó nhất thế giới** là một trò chơi thuộc thể loại qua màn. Nhiệm vụ của bạn rất đơn giản : điều khiển khối vuông màu đỏ vượt qua các chướng ngại vật (các chấm màu xanh), đồng thời thu thập tất cả các đồng xu vàng cần thiết để qua màn. Game có tổng cộng 15 màn tất cả, với độ khó tăng dần đến mức bạn sẽ phải đập bàn phím sau khi chơi được một lúc.</br>
 
+- [0. Cách tải game](#0-cách-ti-game)
+   * [0.1 Không bao gồm code](#01-không-bao-gm-code)
+   * [0.2 Bao gồm code và có thể biên dịch](#02-bao-gm-code-và-có-th-biên-dch)
+- [1. Bắt đầu game](#1-bt-u-game)
+- [2. Chọn chế độ](#2-chn-ch-)
+- [3. Chọn màn](#3-chn-màn)
+- [4. Chọn độ khó](#4-chn-khó)
+- [5. Các thành phần trong game](#5-các-thành-phn-trong-game)
+- [6. Hướng dẫn chơi game](#6-hng-dn-chi-game)
+- [7. Qua màn](#7-qua-màn)
+- [8. Về cơ chế hoạt động của game](#8-v-c-ch-hot-ng-ca-game)
+- [9. Credits](#9-credits)
 # 0. Cách tải game
 ## 0.1 Không bao gồm code
 
@@ -77,14 +88,72 @@ Sau đó, hãy chọn nút **BACK TO MAIN MENU** để quay lại giao diện me
     * cTexture: chứa Texture của đồng xu đó.
     * cAlpha: độ sáng của đồng xu.
     * cStatus: Trạng thái của đồng xu (0 nếu chưa bị thu thập, 1 nếu bị thu thập nhưng chưa được lưu, 2 nếu đã bị thu thập và đã được lưu ở checkpoint nào đó).
+    * Hàm loadFromFile(): load Texture của đồng xu.
+    * Hàm free(): Giải phóng bộ nhớ của đồng xu.
+    * Hàm setBlendMode(): Đặt chế độ trộn cho đồng xu.
+    * Các hàm setAlpha(), setX(),setY(),... : gán giá trị cho các biến trên.
+    * Các hàm getAlphaValue(), getX(), getY(),... : trả về giá trị các biến trên.
+    * Hàm render(): xuất hình từ khung hiện tại (current frame).
 - Trong file `Movepath.cpp`:
+    * isCircular : để nói rằng chấm tròn xanh có di chuyển theo quỹ đạo tròn hay không.
+    * Nếu isCircular = 0 thì các biến sẽ có ý nghĩa như sau:
+        + xS,yS: tọa độ xuất phát của quỹ đạo di chuyển theo đường thẳng.
+        + xF,yF: tọa độ kết thúc của quỹ đạo di chuyển theo đường thẳng.
+        + moveTime : thời gian đễ di chuyển hết quỹ đạo.
+        + Biến rad sẽ không có ý nghĩa ở đây.    
+    * Nếu isCircular = 1 thì các biến sẽ có ý nghĩa như sau:
+        + xS,yS: tọa độ tâm đường tròn quỹ đạo di chuyển.
+        + xF,yF: góc bắt đầu và góc kết thúc của quỹ đạo di chuyển theo hình tròn.
+        + moveTime : thời gian đễ di chuyển hết quỹ đạo.
+        + Rad: Bán kính quỹ đạo di chuyển. Nguyên lý ở đây là, chấm tròn sẽ di chuyển xung quanh tâm đường tròn quỹ đạo với bán kính là Rad.
 - Trong file `Dot.cpp` và `Dot.hpp`:
+    * Mảng pattern: Sử dụng ctdl `Movepath` để lưu quỹ đạo di chuyển của chấm xanh.
+    * totaltime: Lưu thời gian di chuyển tổng cộng của các quỹ đạo của một chấm xanh.
+    * cTexture: chứa Texture của chấm xanh đó.
+    * Hàm addPath(): Thêm quỹ đạo di chuyển vào cuối mảng pattern.
+    * Hàm loadImage(): load Texture của chấm xanh.
+    * Hàm render(): xuất hình chấm xanh.
+    * Các hàm getXS(),getYS(),...: lấy các tham số trong lớp hiện tại.
 - Trong file `HUD_Text.cpp` và `HUD_Text.hpp`:
+    * HTX, HTY: lưu tọa độ của Texture.
+    * HTWidth, HTHeight: lưu chiều dài, chiều cao của Texure.
+    * HTTexture: chứa Texture của đồng xu đó.
+    * Hàm loadText(): load Texture từ một nội dung văn bản cho trước.
+    * Hàm renderText(): xuất hình Texture hiện tại.
+    * Các hàm setX(),setY(),... : gán giá trị cho các biến trên.
+    * Các hàm getX(), getY(),... : trả về giá trị các biến trên.
 - Trong file `HUD_Texture.cpp` và `HUD_Texture.hpp`:
+    * Có chức năng tương tự cấu trúc dữ liệu `HUD_Text`, tuy nhiên Texture ở đây sẽ được lấy từ ảnh (image) thay vì nội dung văn bản (text).
 - Trong file `Level.cpp` và `Level.hpp`:
+    * Hai mảng spawnX, spawnY: lưu tọa độ spawn của các checkpoint trong mỗi màn.
+    * Mảng a[][]: Bản đồ của màn hiện tại. Giá trị tại mỗi ô đại diện cho những ý nghĩa như sau:
+        + 0 : Ô đó là nền (có màu tím đậm).
+        + 1 : Ô đó là vùng di chuyển được (có màu tìm nhạt và màu trắng đan xen lẫn nhau).
+        + 2 : Ô đó là vùng checkpoint và đồng thời là khu vực spawn ban đầu của người chơi.
+        + 3 : Ô đó là vùng checkpoint và đồng thời là khu vực về đích cần đến.
+        + 4+: Ô đó là vùng checkpoint. Bạn có thể lưu tiến trình tại đây.
+    * nCheckpoints: Lưu số lượng checkpoint. Checkpoint 1 là khu vực spawn ban đầu, còn checkpoint 2 là khu vực về đích.
+    * Bao gồm các hàm có chức năng lấy các tham số như các ctdl trên.
+    * Hàm readLevelData(): Có chức năng đọc dữ liệu trong 1 file .txt tùy theo màn hiện tại.
+    * Hàm drawMap(): Có chức năng vẽ và xuất map từ dạng số sang dạng hình ảnh lên màn hình.
+    * Ngoài ra còn bao gồm các hàm kiểm tra trạng thái của các ô kề trên, dưới, trái, phải để vẽ map.
 - Trong file `Player.cpp` và `Player.hpp`:
+    * Lưu vị trí hiện tại, gia tốc, trạng thái di chuyển và các tham số khác của người chơi. Đồng thời quản lý điều khiển của người chơi cũng như xử lý các sự kiện khi va chạm thành khu vực di chuyển được hay va chạm các chấm xanh, đồng xu, kiểm soát người chơi (khối vuông đỏ) ở trong vùng chơi di chuyển được, tránh đi ra ngoài vùng nền.
 - Trong file `UI.cpp` và `UI.hpp`:
+    * Là một ctdl quản lý các ctdl con bao gồm `HUD_Text` và `HUD_Texture`
+- Trong file `common.h`:
+    * Bao gồm các thư viện cơ bản mặc định, cũng như các hằng số cần thiết của game.
 - Trong file `main.cpp`:
+    * Có chức năng chính là quản lí vận hành của game. Bao gồm renderer, window, các mix_chunk, mix_music và các biến có kiểu dữ liệu thuộc ctdl trên.
+    * Hàm init(): Khởi động các chức năng cơ bản của thư viện `SDL2` cũng như `SDL2_image`, `SDL2_ttf`,`SDL2_mixer`. Đồng thời khởi động các hàm cơ bản để quản lý trò chơi.
+    * Hàm closeGame(): Giải phóng bộ nhớ các biến được dùng để quản lí game.
+    * Hàm runMainMenu(): Quản lí giao diện menu chính của game.
+    * Hàm runTutorialMenu(): Quản lí giao diện hướng dẫn của game.
+    * Hàm runModeSelection(): Quản lí giao diện chọn chế độ chơi của game.
+    * Hàm runLevelSelection(): Quản lí giao diện chọn màn của game (khi chọn chế độ Level Select).
+    * Hàm runHardnessSelection(): Quản lí giao diện chọn độ khó của game.
+    * Hàm run(): Quản lí giao diện chơi game chính của game.
+    * Hàm runvictoryMenu(): Quản lí giao diện khi người dùng hoàn thành trò chơi.
 # 9. Credits
 - Thầy Lê Đức Trọng: vì đã giúp đỡ em rất nhiều trong khâu phát triển game.
 - Trợ giảng thầy Trần Thủy: vì đã giúp đỡ em trong khâu thiết kế và đóng góp về game.
