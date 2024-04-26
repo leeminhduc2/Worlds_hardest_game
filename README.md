@@ -158,6 +158,6 @@ Sau đó, hãy chọn nút **BACK TO MAIN MENU** để quay lại giao diện me
 - Thầy Lê Đức Trọng: vì đã giúp đỡ em rất nhiều trong khâu phát triển game.
 - Trợ giảng thầy Trần Thủy: vì đã giúp đỡ em trong khâu thiết kế và đóng góp về game.
 - Mentor Nguyễn Vũ Thanh Tùng: vì đã giúp đỡ em rất nhiều trong khâu sửa lỗi game, git, github repo.
-- Lazyfoo SDL_2's tutorial : https://lazyfoo.net/tutorials/SDL/index.php.
-- Resources, SFX and Music : https://github.com/danspage/worldshardestgame/tree/master?tab=readme-ov-file.
-- Additional SFX: https://pixabay.com/vi/sound-effects/.
+- Lazyfoo SDL2's tutorial : https://lazyfoo.net/tutorials/SDL/index.php.
+- Resources, SFXs and Music : https://github.com/danspage/worldshardestgame/tree/master?tab=readme-ov-file.
+- Additional SFXs: https://pixabay.com/vi/sound-effects/.
