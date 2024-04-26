@@ -18,12 +18,12 @@
 # 0. Cách tải game
 ## 0.1 Không bao gồm code
 
-Tải game (được nén thành file zip) tại link : </br>
+Tải game (được nén thành file zip) tại [đây](https://github.com/leeminhduc2/Worlds_hardest_game/releases/tag/release) : </br>
 Giải nén game vào một thư mục, khởi động file **World's hardest game.exe** rồi tận hưởng game thôi nào !!!
 
 ## 0.2 Bao gồm code và có thể biên dịch
 
-**Bước 1**: Clone repo này về (ở nhánh master 2)</br>
+**Bước 1**: Clone repo này về (ở nhánh master)</br>
 **Bước 2**: Tải IDE Visual Studio tại [đây](https://visualstudio.microsoft.com). Kéo xuống rồi chọn bản Community 2022 rồi tải về.</br>
 **Bước 3**: Cài đặt thư viện `SDL2` tại [đây](https://lazyfoo.net/tutorials/SDL/01_hello_SDL/windows/msvc2019/index.php). Áp dụng tương tự với các thư viện mở rộng như `SDL2_image`, `SDL2_ttf`,`SDL2_mixer`.</br>
 **Bước 4**: Khởi động file **World's hardest game.sln**, sau đó chạy biên dịch và tận hưởng game thôi nào !!!
