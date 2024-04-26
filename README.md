@@ -3,17 +3,17 @@
 # Giới thiệu chung
 **World's hardest game - Trò chơi khó nhất thế giới** là một trò chơi thuộc thể loại qua màn. Nhiệm vụ của bạn rất đơn giản : điều khiển khối vuông màu đỏ vượt qua các chướng ngại vật (các chấm màu xanh), đồng thời thu thập tất cả các đồng xu vàng cần thiết để qua màn. Game có tổng cộng 15 màn tất cả, với độ khó tăng dần đến mức bạn sẽ phải đập bàn phím sau khi chơi được một lúc.</br>
 
-- [0. Cách tải game](#0-cách-ti-game)
-   * [0.1 Không bao gồm code](#01-không-bao-gm-code)
-   * [0.2 Bao gồm code và có thể biên dịch](#02-bao-gm-code-và-có-th-biên-dch)
-- [1. Bắt đầu game](#1-bt-u-game)
-- [2. Chọn chế độ](#2-chn-ch-)
-- [3. Chọn màn](#3-chn-màn)
-- [4. Chọn độ khó](#4-chn-khó)
-- [5. Các thành phần trong game](#5-các-thành-phn-trong-game)
-- [6. Hướng dẫn chơi game](#6-hng-dn-chi-game)
+- [0. Cách tải game](#0-cách-tải-game)
+   * [0.1 Không bao gồm code](#01-không-bao-gồm-code)
+   * [0.2 Bao gồm code và có thể biên dịch](#02-bao-gồm-code-và-có-thể-biên-dịch)
+- [1. Bắt đầu game](#1-bắt-đầu-game)
+- [2. Chọn chế độ](#2-chọn-chế-độ)
+- [3. Chọn màn](#3-chọn-màn)
+- [4. Chọn độ khó](#4-chọn-độ-khó)
+- [5. Các thành phần trong game](#5-các-thành-phần-trong-game)
+- [6. Hướng dẫn chơi game](#6-hướng-dẫn-chơi-game)
 - [7. Qua màn](#7-qua-màn)
-- [8. Về cơ chế hoạt động của game](#8-v-c-ch-hot-ng-ca-game)
+- [8. Về cơ chế hoạt động của game](#8-về-cơ-chế-hoạt-động-của-game)
 - [9. Credits](#9-credits)
 # 0. Cách tải game
 ## 0.1 Không bao gồm code
