@@ -75,8 +75,8 @@ void Dot::render(int currentTime, SDL_Renderer *gRenderer, SDL_Rect *clip , doub
         {   
 			if (pattern[i].isCircular)
 			{
-				x = pattern[i].xS + (pattern[i].rad * cos(pattern[i].xF+ (pattern[i].yF-pattern[i].xF)*(double (currentTime))/pattern[i].moveTime/180*M_PI));
-				y = pattern[i].yS + (pattern[i].rad * sin(pattern[i].xF+ (pattern[i].yF-pattern[i].xF)*(double(currentTime))/pattern[i].moveTime/180*M_PI));
+				x = pattern[i].xS + (pattern[i].rad * cos((pattern[i].xF+ (pattern[i].yF-pattern[i].xF)*(double (currentTime))/pattern[i].moveTime)/180*M_PI));
+				y = pattern[i].yS + (pattern[i].rad * sin((pattern[i].xF+ (pattern[i].yF-pattern[i].xF)*(double(currentTime))/pattern[i].moveTime)/180*M_PI));
 			}
 			else 
 			{

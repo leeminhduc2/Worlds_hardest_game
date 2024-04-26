@@ -80,3 +80,42 @@ void UI::renderText(int i, SDL_Renderer* gRenderer, SDL_Rect* clip)
 {
 	textList[i].renderText(textList[i].getX(), textList[i].getY(), gRenderer, clip);
 }
+//To get the coordinates of the ith texture
+int UI::getTextureX(int i)
+{
+	return textureList[i].getX();
+}
+int UI::getTextureY(int i)
+{
+	return textureList[i].getY();
+}
+
+//To get the dimensions of the ith texture
+int UI::getTextureWidth(int i)
+{
+	return textureList[i].getWidth();
+}
+int UI::getTextureHeight(int i)
+{
+	return textureList[i].getHeight();
+}
+
+//To get the coordinates of the ith text
+int UI::getTextX(int i)
+{
+	return textList[i].getX();
+}
+int UI::getTextY(int i)
+{
+	return textList[i].getY();
+}
+
+//To get the dimensions of the ith text
+int UI::getTextWidth(int i)
+{
+	return textList[i].getWidth();
+}
+int UI::getTextHeight(int i)
+{
+	return textList[i].getHeight();
+}
