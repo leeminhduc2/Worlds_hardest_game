@@ -42,6 +42,7 @@ Sau đó, giao diện game sẽ giống như sau:</br>
 
 </div>
 Khi bạn di chuyển chuột vào nút tương ứng, dòng chữ sẽ thay đổi từ màu trắng/đen thành màu đỏ đậm.
+
 - Nếu bạn muốn bắt đầu chơi game , hãy bấm vào nút **PLAY GAME** .
 - Nếu bạn muốn đọc hướng dẫn chơi và điều khiển game, hãy bấm vào nút **TUTORIAL**.
 - Nếu bạn muốn thoát khỏi trò chơi, hãy bấm vào nút **EXIT GAME**.
@@ -53,7 +54,8 @@ Có hai chế độ: chế độ Speedrun và chế độ Level Select.</br>
 ![ezgif com-video-to-gif](readme/mode.png)
 
 </div>
-Ở chế độ Speedrun, bạn sẽ phải vượt qua tất cả các màn trong trò chơi với thời gian nhanh nhất có thể. Nếu bạn cần tập luyện từng màn để chơi Speedrun, bạn có thể chọn chế độ Level Select. Khi đó, giao diện chọn màn sẽ hiện lên.</br>
+Ở chế độ Speedrun, bạn sẽ phải vượt qua tất cả các màn trong trò chơi với thời gian nhanh nhất có thể. Nếu bạn cần tập luyện từng màn để chơi Speedrun, bạn có thể chọn chế độ Level Select. Khi đó, giao diện chọn màn sẽ hiện lên.
+
 Lưu ý rằng, nếu bạn muốn quay trở lại giao diện menu chính, bạn có thể bấm vào nút **BACK TO PREVIOUS** hiện ở góc phải dưới của màn hình. 
 
 - Để chọn chế độ Speedrun, hãy bấm vào nút **SPEEDRUN**.
@@ -67,6 +69,7 @@ Nếu bạn chọn chế độ chọn màn, giao diện chọn màn sẽ hiện 
 
 </div>
 Trò chơi sẽ bao gồm 15 màn tất cả, với độ khó tăng dần theo số màn hiện tại đến mức khó không thể tin nổi.</br>
+
 Để chọn màn, di chuyển chuột đến ô màn tương ứng bạn muốn chọn. Sau đó chọn ô màn đó. Bạn cũng có thể chọn quay lại giao diện chọn chế độ bằng cách bấm vào nút **BACK TO PREVIOUS** hiện ở góc phải dưới của màn hình.</br>
 
 # 4. Chọn độ khó
@@ -77,6 +80,7 @@ Có hai độ khó: dễ và khó.<br>
 
 </div>
 Ở chế độ dễ, các chướng ngại vật sẽ di chuyển chậm hơn, do đó sẽ dễ dàng qua màn hơn. Ở chế độ khó, tốc độ của chướng ngại vật sẽ tăng lên gấp đôi, khiến cho việc vượt qua các chướng ngại vật trở nên khó hơn.</br>
+
 - Để chọn chế độ dễ, bấm vào nút **EASY**.
 - Để chọn chế độ khó, bấm vào nút **HARD**.
 Nếu bạn muốn đổi chế độ chơi game hay muốn thay đổi màn chơi hiện tại (ở chế độ chọn màn), hãy bấm vào nút **BACK TO PREVIOUS** hiện ở góc phải dưới của màn hình. </br>
@@ -90,9 +94,9 @@ Nếu bạn muốn đổi chế độ chơi game hay muốn thay đổi màn ch�
 
 </div>
 
-- Khối vuông màu đỏ (Red square): Là nhân vật chính mà người chơi sẽ di chuyển. 
-- Chấm xanh (blue dots): Khi người chơi di chuyển vào chấm xanh, khối đỏ sẽ chết và di chuyển lại về khu vực checkpoint đã được lưu trước đó . Các chấm xanh có thể di chuyển theo chu kì hình chữ I, hình chữ L hay bất cứ chu kì nào bạn có thể tưởng tượng.
-- Đồng xu (Coins): Là một vật phẩm quan trọng trong game. Để qua màn, bạn cần phải thu thập tất cả các đồng xu có trên bản đồ. Khi di chuyển vào một khu vực checkpoint nào đó, số đồng xu của bạn đã thu thập được sẽ được lưu lại. Lần sau khi chết, bạn sẽ không phải cất công đi nhặt lại những đồng xu kia nữa.
+- Khối vuông màu đỏ (Red square)![ezgif com-video-to-gif](readme/Player.bmp): Là nhân vật chính mà người chơi sẽ di chuyển. 
+- Chấm xanh (blue dots)![ezgif com-video-to-gif](readme/Dot.bmp): Khi người chơi di chuyển vào chấm xanh, khối đỏ sẽ chết và di chuyển lại về khu vực checkpoint đã được lưu trước đó . Các chấm xanh có thể di chuyển theo chu kì hình chữ I, hình chữ L hay bất cứ chu kì nào bạn có thể tưởng tượng.
+- Đồng xu (Coins)![ezgif com-video-to-gif](readme/coin.jpg): Là một vật phẩm quan trọng trong game. Để qua màn, bạn cần phải thu thập tất cả các đồng xu có trên bản đồ. Khi di chuyển vào một khu vực checkpoint nào đó, số đồng xu của bạn đã thu thập được sẽ được lưu lại. Lần sau khi chết, bạn sẽ không phải cất công đi nhặt lại những đồng xu kia nữa.
 - Level :![ezgif com-video-to-gif](readme/levelcounter.png)
 -  Bạn có thể xem số màn hiện tại của mình tại góc trên trái của màn hình game.
 - Bộ đếm đồng xu (Coin counter) ![ezgif com-video-to-gif](readme/coincounter.png)
